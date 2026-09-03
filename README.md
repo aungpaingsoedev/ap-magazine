@@ -9,7 +9,6 @@ Next.js App Router magazine site with a protected editorial CMS.
 - Supabase Storage for cover/avatar/media uploads
 - Better Auth (Google OAuth) with RBAC
 - Tiptap JSONB article bodies
-- Socket.IO realtime feed updates when posts are published
 
 ## Run locally
 
@@ -18,8 +17,6 @@ npm install
 npm run db:push
 npm run dev
 ```
-
-`npm run dev` starts the custom Node server (`server.ts`) with Next.js + Socket.IO on `/api/socketio`. Use `npm run dev:next` only if you want plain Next without realtime.
 
 ### Supabase setup
 

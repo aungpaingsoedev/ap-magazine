@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { SiteHeader } from '@/components/layout/site-header';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { DeletePostButton } from '@/components/blog/delete-post-button';
+import { MediaImage } from '@/components/ui/media-image';
 import { formatMagazineDate } from '@/lib/blog-utils';
 import { getSession } from '@/lib/auth/session';
 import { listOwnPosts } from '@/lib/queries/blog';
@@ -61,12 +62,11 @@ export default async function PostsPage() {
               <li key={post.id}>
                 <div className="flex flex-col gap-4 border-2 border-ink/20 bg-[color-mix(in_srgb,var(--paper)_90%,white)] p-4 sm:flex-row sm:items-center [border-radius:0.35rem_0.8rem_0.4rem_0.7rem/0.7rem_0.35rem_0.8rem_0.45rem]">
                   {post.coverImage ? (
-                    <div className="h-20 w-20 shrink-0 overflow-hidden border border-ink/20 bg-paper-deep sm:h-24 sm:w-24">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                    <div className="relative h-20 w-20 shrink-0 overflow-hidden border border-ink/20 bg-paper-deep sm:h-24 sm:w-24">
+                      <MediaImage
                         src={post.coverImage}
                         alt=""
-                        className="h-full w-full object-cover"
+                        sizes="96px"
                       />
                     </div>
                   ) : null}

@@ -8,7 +8,7 @@ import {
   getUserReactionsForContents,
 } from '@/lib/queries/blog';
 import { getActiveCategories, getSiteSettings } from '@/lib/queries/taxonomy';
-import { extractCoverImage, magazineCategory } from '@/lib/blog-utils';
+import { magazineCategory } from '@/lib/blog-utils';
 
 export default async function HomePage({
   searchParams,
@@ -46,11 +46,12 @@ export default async function HomePage({
     authorName: post.authorName,
     authorImage: post.authorImage,
     authorSlug: post.authorSlug,
-    coverImage: post.coverImage ?? extractCoverImage(post.body),
+    coverImage: post.coverImage,
     category: post.categoryName ?? magazineCategory(post.slug),
     featured: post.featured,
     editorsPick: post.editorsPick,
     viewCount: post.viewCount ?? 0,
+    readingTime: post.readingTime,
     reactionCounts: reactionMap.get(post.id) ?? [],
     userReaction: userReactionMap.get(post.id) ?? null,
   }));

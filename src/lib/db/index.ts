@@ -16,7 +16,7 @@ function getDatabaseUrl(): string {
 
 const client = postgres(getDatabaseUrl(), {
   prepare: false, // required for Supabase transaction pooler (port 6543)
-  max: 10,
+  max: process.env.VERCEL ? 1 : 5,
 });
 
 export const db = drizzle(client, { schema });

@@ -233,11 +233,6 @@ export async function saveArticle(
     await syncTags(id, data.tagIds ?? []);
     revalidateArticle(data.slug);
 
-    if (status === 'published') {
-      const { broadcastPublishedPost } = await import('@/lib/realtime/broadcast');
-      await broadcastPublishedPost(id);
-    }
-
     return ok({ id, slug: data.slug });
   } catch (err) {
     return fail(publicError(err, 'Failed to save article'));
@@ -294,11 +289,6 @@ export async function setArticleStatus(
       .where(eq(content.id, id));
 
     revalidateArticle(article.slug);
-
-    if (status === 'published') {
-      const { broadcastPublishedPost } = await import('@/lib/realtime/broadcast');
-      await broadcastPublishedPost(id);
-    }
 
     return ok(undefined);
   } catch (err) {

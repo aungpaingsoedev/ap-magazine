@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { MediaImage } from '@/components/ui/media-image';
 
 type AvatarProps = {
   name?: string | null;
@@ -32,11 +33,10 @@ export function Avatar({ name, image, size = 'md', className }: AvatarProps) {
       aria-hidden={image ? undefined : true}
     >
       {image ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <MediaImage
           src={image}
           alt={name ? `${name} avatar` : 'Avatar'}
-          className="h-full w-full object-cover"
+          sizes={size === 'xl' ? '96px' : size === 'lg' ? '56px' : size === 'md' ? '40px' : '32px'}
         />
       ) : (
         <span>{initials(name)}</span>

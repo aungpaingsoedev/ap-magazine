@@ -1,10 +1,9 @@
 import { nanoid } from 'nanoid';
-import { eq, isNull, sql, and } from 'drizzle-orm';
+import { eq, isNull, sql, and, or } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import {
   category,
   content,
-  contentCategory,
   siteSettings,
   user,
 } from '@/lib/db/schema';
@@ -18,20 +17,26 @@ const DEFAULT_CATEGORIES = [
   { name: 'Essay', slug: 'essay', sortOrder: 4 },
 ] as const;
 
+let defaultsReady = false;
 let seeding: Promise<void> | null = null;
 
 export async function ensureCmsDefaults(): Promise<void> {
+  if (defaultsReady) return;
   if (!seeding) {
-    seeding = seedCms().finally(() => {
-      seeding = null;
-    });
+    seeding = seedCms()
+      .then(() => {
+        defaultsReady = true;
+      })
+      .finally(() => {
+        seeding = null;
+      });
   }
   await seeding;
 }
 
 async function seedCms(): Promise<void> {
   const [existingSettings] = await db
-    .select({ id: siteSettings.id })
+    .select({ id: siteSettings.id, siteName: siteSettings.siteName })
     .from(siteSettings)
     .where(eq(siteSettings.id, 'default'))
     .limit(1);
@@ -48,7 +53,7 @@ async function seedCms(): Promise<void> {
       defaultSeoDescription: 'Stories, essays, and culture from the community',
       updatedAt: new Date(),
     });
-  } else {
+  } else if (existingSettings.siteName === 'Atlas Magazine') {
     await db
       .update(siteSettings)
       .set({
@@ -68,9 +73,11 @@ async function seedCms(): Promise<void> {
   const existingCategories = await db.select({ slug: category.slug }).from(category);
   const have = new Set(existingCategories.map((row) => row.slug));
   const now = new Date();
+  let insertedCategory = false;
 
   for (const item of DEFAULT_CATEGORIES) {
     if (have.has(item.slug)) continue;
+    insertedCategory = true;
     await db.insert(category).values({
       id: nanoid(),
       name: item.name,
@@ -80,6 +87,10 @@ async function seedCms(): Promise<void> {
       createdAt: now,
       updatedAt: now,
     });
+  }
+
+  if (existingSettings && !insertedCategory) {
+    return;
   }
 
   const categories = await db.select().from(category);
@@ -97,7 +108,6 @@ async function seedCms(): Promise<void> {
     await db.update(content).set({ categoryId }).where(eq(content.id, post.id));
   }
 
-  // Backfill junction rows from primary category_id (no-op if table missing)
   try {
     await db.execute(sql`
       INSERT INTO content_category (content_id, category_id)
@@ -111,10 +121,10 @@ async function seedCms(): Promise<void> {
 
   const users = await db
     .select({ id: user.id, name: user.name, slug: user.slug, username: user.username })
-    .from(user);
+    .from(user)
+    .where(or(isNull(user.slug), isNull(user.username)));
 
   for (const person of users) {
-    if (person.slug && person.username) continue;
     const base = slugify(person.username || person.name || person.id) || person.id;
     const unique = `${base}-${person.id.slice(0, 6)}`;
     await db

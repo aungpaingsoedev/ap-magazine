@@ -86,6 +86,7 @@ export default async function AuthorPage({
               coverImage={post.coverImage}
               category={post.categoryName ?? undefined}
               viewCount={post.viewCount ?? 0}
+              readingTime={post.readingTime}
               reactionCounts={reactionMap.get(post.id) ?? []}
               userReaction={userReactionMap.get(post.id) ?? null}
               isSignedIn={Boolean(session?.user)}

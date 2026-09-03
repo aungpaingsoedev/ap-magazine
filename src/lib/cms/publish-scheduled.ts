@@ -1,10 +1,18 @@
 import { and, eq, lte, or } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { content } from '@/lib/db/schema';
-import { broadcastPublishedPost } from '@/lib/realtime/broadcast';
+
+let lastCheckAt = 0;
+const CHECK_INTERVAL_MS = 60_000;
 
 /** Publishes scheduled articles whose go-live time has passed. */
-export async function publishDueScheduledPosts(): Promise<number> {
+export async function publishDueScheduledPosts(
+  options?: { force?: boolean },
+): Promise<number> {
+  const nowMs = Date.now();
+  if (!options?.force && nowMs - lastCheckAt < CHECK_INTERVAL_MS) return 0;
+  lastCheckAt = nowMs;
+
   const now = new Date();
 
   const due = await db
@@ -24,8 +32,6 @@ export async function publishDueScheduledPosts(): Promise<number> {
       ),
     )
     .returning({ id: content.id });
-
-  await Promise.all(due.map((row) => broadcastPublishedPost(row.id)));
 
   return due.length;
 }

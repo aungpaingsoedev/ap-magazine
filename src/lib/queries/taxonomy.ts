@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { asc, eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import {
@@ -9,14 +10,14 @@ import {
 } from '@/lib/db/schema';
 import { ensureCmsDefaults } from '@/lib/db/seed';
 
-export async function getActiveCategories() {
+export const getActiveCategories = cache(async () => {
   await ensureCmsDefaults();
   return db
     .select()
     .from(category)
     .where(eq(category.active, true))
     .orderBy(asc(category.sortOrder), asc(category.name));
-}
+});
 
 export async function getAllCategories() {
   await ensureCmsDefaults();
@@ -65,7 +66,7 @@ export async function getArticleCategories(contentId: string) {
     .orderBy(asc(category.sortOrder), asc(category.name));
 }
 
-export async function getSiteSettings() {
+export const getSiteSettings = cache(async () => {
   await ensureCmsDefaults();
   const rows = await db
     .select()
@@ -73,4 +74,4 @@ export async function getSiteSettings() {
     .where(eq(siteSettings.id, 'default'))
     .limit(1);
   return rows[0] ?? null;
-}
+});

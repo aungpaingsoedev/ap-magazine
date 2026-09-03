@@ -225,32 +225,37 @@ export async function getAuthorArticles(
     eq(content.status, 'published'),
   );
 
-  const [totalRow] = await db
-    .select({ value: count() })
-    .from(content)
-    .where(where);
+  const offset = (requestedPage - 1) * pageSize;
+
+  const [totalRow, rows] = await Promise.all([
+    db
+      .select({ value: count() })
+      .from(content)
+      .where(where)
+      .then((result) => result[0]),
+    db
+      .select({
+        id: content.id,
+        title: content.title,
+        slug: content.slug,
+        excerpt: content.excerpt,
+        coverImage: content.coverImage,
+        publishedAt: content.publishedAt,
+        readingTime: content.readingTime,
+        viewCount: content.viewCount,
+        categoryName: category.name,
+      })
+      .from(content)
+      .leftJoin(category, eq(content.categoryId, category.id))
+      .where(where)
+      .orderBy(desc(content.publishedAt))
+      .limit(pageSize)
+      .offset(offset),
+  ]);
 
   const total = Number(totalRow?.value ?? 0);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const page = Math.min(requestedPage, totalPages);
-
-  const rows = await db
-    .select({
-      id: content.id,
-      title: content.title,
-      slug: content.slug,
-      excerpt: content.excerpt,
-      coverImage: content.coverImage,
-      publishedAt: content.publishedAt,
-      viewCount: content.viewCount,
-      categoryName: category.name,
-    })
-    .from(content)
-    .leftJoin(category, eq(content.categoryId, category.id))
-    .where(where)
-    .orderBy(desc(content.publishedAt))
-    .limit(pageSize)
-    .offset((page - 1) * pageSize);
 
   return { rows, total, page, pageSize, totalPages };
 }

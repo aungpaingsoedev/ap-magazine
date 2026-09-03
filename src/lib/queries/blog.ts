@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { and, count, desc, eq, inArray } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import {
@@ -32,7 +33,6 @@ const publishedPostSelect = {
   slug: content.slug,
   excerpt: content.excerpt,
   coverImage: content.coverImage,
-  body: content.body,
   publishedAt: content.publishedAt,
   featured: content.featured,
   editorsPick: content.editorsPick,
@@ -70,27 +70,30 @@ export async function getPublishedPostsPage(options?: {
 
   const requestedPage = Math.max(1, options?.page ?? 1);
   const pageSize = Math.min(48, Math.max(1, options?.pageSize ?? 12));
+  const offset = (requestedPage - 1) * pageSize;
 
-  const [totalRow] = await db
-    .select({ value: count() })
-    .from(content)
-    .where(eq(content.status, 'published'));
+  const [totalRow, rows] = await Promise.all([
+    db
+      .select({ value: count() })
+      .from(content)
+      .where(eq(content.status, 'published'))
+      .then((result) => result[0]),
+    db
+      .select(publishedPostSelect)
+      .from(content)
+      .leftJoin(user, eq(content.createdBy, user.id))
+      .leftJoin(category, eq(content.categoryId, category.id))
+      .where(eq(content.status, 'published'))
+      .orderBy(
+        desc(content.publishedAt),
+        desc(content.createdAt),
+      )
+      .limit(pageSize)
+      .offset(offset),
+  ]);
 
   const total = Number(totalRow?.value ?? 0);
   const { page, totalPages } = normalizePage(requestedPage, pageSize, total);
-
-  const rows = await db
-    .select(publishedPostSelect)
-    .from(content)
-    .leftJoin(user, eq(content.createdBy, user.id))
-    .leftJoin(category, eq(content.categoryId, category.id))
-    .where(eq(content.status, 'published'))
-    .orderBy(
-      desc(content.publishedAt),
-      desc(content.createdAt),
-    )
-    .limit(pageSize)
-    .offset((page - 1) * pageSize);
 
   return { rows, total, page, pageSize, totalPages };
 }
@@ -141,54 +144,58 @@ export async function getPublishedPostsByCategoryPage(
     eq(content.status, 'published'),
     eq(category.slug, categorySlug),
   );
+  const offset = (requestedPage - 1) * pageSize;
 
-  const [totalRow] = await db
-    .select({ value: count() })
-    .from(content)
-    .innerJoin(
-      contentCategory,
-      eq(contentCategory.contentId, content.id),
-    )
-    .innerJoin(category, eq(contentCategory.categoryId, category.id))
-    .where(where);
+  const [totalRow, rows] = await Promise.all([
+    db
+      .select({ value: count() })
+      .from(content)
+      .innerJoin(
+        contentCategory,
+        eq(contentCategory.contentId, content.id),
+      )
+      .innerJoin(category, eq(contentCategory.categoryId, category.id))
+      .where(where)
+      .then((result) => result[0]),
+    db
+      .select({
+        id: content.id,
+        title: content.title,
+        slug: content.slug,
+        excerpt: content.excerpt,
+        coverImage: content.coverImage,
+        publishedAt: content.publishedAt,
+        featured: content.featured,
+        editorsPick: content.editorsPick,
+        readingTime: content.readingTime,
+        viewCount: content.viewCount,
+        authorName: user.name,
+        authorImage: user.image,
+        authorSlug: user.slug,
+        categoryName: category.name,
+        categorySlug: category.slug,
+      })
+      .from(content)
+      .leftJoin(user, eq(content.createdBy, user.id))
+      .innerJoin(
+        contentCategory,
+        eq(contentCategory.contentId, content.id),
+      )
+      .innerJoin(category, eq(contentCategory.categoryId, category.id))
+      .where(where)
+      .orderBy(desc(content.publishedAt))
+      .limit(pageSize)
+      .offset(offset),
+  ]);
 
   const total = Number(totalRow?.value ?? 0);
   const { page, totalPages } = normalizePage(requestedPage, pageSize, total);
-
-  const rows = await db
-    .select({
-      id: content.id,
-      title: content.title,
-      slug: content.slug,
-      excerpt: content.excerpt,
-      coverImage: content.coverImage,
-      publishedAt: content.publishedAt,
-      featured: content.featured,
-      editorsPick: content.editorsPick,
-      viewCount: content.viewCount,
-      authorName: user.name,
-      authorImage: user.image,
-      authorSlug: user.slug,
-      categoryName: category.name,
-      categorySlug: category.slug,
-    })
-    .from(content)
-    .leftJoin(user, eq(content.createdBy, user.id))
-    .innerJoin(
-      contentCategory,
-      eq(contentCategory.contentId, content.id),
-    )
-    .innerJoin(category, eq(contentCategory.categoryId, category.id))
-    .where(where)
-    .orderBy(desc(content.publishedAt))
-    .limit(pageSize)
-    .offset((page - 1) * pageSize);
 
   return { rows, total, page, pageSize, totalPages };
 }
 
 
-export async function getPostBySlug(slug: string) {
+export const getPostBySlug = cache(async (slug: string) => {
   await publishDueScheduledPosts();
 
   const rows = await db
@@ -225,7 +232,7 @@ export async function getPostBySlug(slug: string) {
     .limit(1);
 
   return rows[0] ?? null;
-}
+});
 
 export async function getPostComments(contentId: string) {
   return db

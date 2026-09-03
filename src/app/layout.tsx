@@ -1,12 +1,27 @@
 import type { Metadata } from 'next';
-import { Kalam } from 'next/font/google';
+import { Kalam, Permanent_Marker, Patrick_Hand } from 'next/font/google';
 import './globals.css';
 import { getSiteSettings } from '@/lib/queries/taxonomy';
 
 const kalam = Kalam({
   variable: '--font-kalam',
   subsets: ['latin'],
-  weight: ['300', '400', '700'],
+  weight: ['400', '700'],
+  display: 'swap',
+});
+
+const permanentMarker = Permanent_Marker({
+  variable: '--font-permanent-marker',
+  subsets: ['latin'],
+  weight: '400',
+  display: 'swap',
+});
+
+const patrickHand = Patrick_Hand({
+  variable: '--font-patrick-hand',
+  subsets: ['latin'],
+  weight: '400',
+  display: 'swap',
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -30,7 +45,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html
       lang="en"
-      className={`${kalam.variable} h-full antialiased`}
+      className={`${kalam.variable} ${permanentMarker.variable} ${patrickHand.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col text-ink">
         {children}

@@ -6,9 +6,9 @@ export function formatMagazineDate(
   if (!date) return '';
   const value = typeof date === 'string' ? new Date(date) : date;
   if (Number.isNaN(value.getTime())) return '';
-  const day = value.getDate();
-  const month = value.toLocaleString('en-GB', { month: 'long' });
-  const year = value.getFullYear();
+  const day = value.getUTCDate();
+  const month = value.toLocaleString('en-GB', { month: 'long', timeZone: 'UTC' });
+  const year = value.getUTCFullYear();
   return `${day}. ${month} ${year}`;
 }
 

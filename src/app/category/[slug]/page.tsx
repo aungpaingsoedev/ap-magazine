@@ -57,6 +57,7 @@ export default async function CategoryPage({
     featured: post.featured,
     editorsPick: post.editorsPick,
     viewCount: post.viewCount ?? 0,
+    readingTime: post.readingTime,
     reactionCounts: reactionMap.get(post.id) ?? [],
     userReaction: userReactionMap.get(post.id) ?? null,
   }));

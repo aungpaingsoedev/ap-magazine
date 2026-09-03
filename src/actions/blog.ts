@@ -96,11 +96,6 @@ export async function createBlogPost(
       })),
     );
 
-    if (isPublic) {
-      const { broadcastPublishedPost } = await import('@/lib/realtime/broadcast');
-      await broadcastPublishedPost(id);
-    }
-
     revalidatePath('/');
     revalidatePath(`/blog/${slug}`);
     revalidatePath('/admin/articles');
@@ -189,11 +184,6 @@ export async function updateBlogPost(
         categoryId,
       })),
     );
-
-    if (isPublic && !wasPublic) {
-      const { broadcastPublishedPost } = await import('@/lib/realtime/broadcast');
-      await broadcastPublishedPost(id);
-    }
 
     revalidatePath('/');
     revalidatePath(`/blog/${existing.slug}`);

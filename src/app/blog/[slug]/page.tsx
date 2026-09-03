@@ -9,6 +9,7 @@ import { CommentSection } from '@/components/blog/comment-section';
 import { ShareButton } from '@/components/blog/share-button';
 import { ViewTracker } from '@/components/blog/view-tracker';
 import { Avatar } from '@/components/ui/avatar';
+import { MediaImage } from '@/components/ui/media-image';
 import { getSession } from '@/lib/auth/session';
 import {
   getPostBySlug,
@@ -164,12 +165,14 @@ export default async function BlogPostPage({ params }: PageProps) {
             )}
 
             {post.coverImage && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={post.coverImage}
-                alt=""
-                className="cover-sketch aspect-[16/10] w-full object-cover"
-              />
+              <div className="cover-sketch relative aspect-[16/10] w-full overflow-hidden">
+                <MediaImage
+                  src={post.coverImage}
+                  alt=""
+                  sizes="(max-width: 768px) 100vw, 768px"
+                  priority
+                />
+              </div>
             )}
 
             <div className="flex flex-wrap items-center justify-between gap-4 border-t-2 border-dashed border-ink/20 pt-5 text-sm">
@@ -196,7 +199,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                 <p className="text-muted">
                   <span className="text-muted/80">Views</span>{' '}
                   <span className="font-medium text-ink">
-                    {(post.viewCount ?? 0).toLocaleString()}
+                    {(post.viewCount ?? 0).toLocaleString('en-US')}
                   </span>
                 </p>
                 <p className="text-muted">

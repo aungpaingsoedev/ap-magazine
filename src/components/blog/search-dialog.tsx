@@ -15,6 +15,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { formatMagazineDate } from '@/lib/blog-utils';
+import { MediaImage } from '@/components/ui/media-image';
 
 export function SearchDialog({
   className,
@@ -107,11 +108,11 @@ export function SearchDialog({
                       className="flex gap-3 border-2 border-ink/20 bg-[color-mix(in_srgb,var(--paper)_90%,white)] p-3 transition-opacity hover:opacity-80 [border-radius:0.35rem_0.8rem_0.4rem_0.7rem/0.7rem_0.35rem_0.8rem_0.45rem]"
                     >
                       {hit.coverImage ? (
-                        <div className="h-16 w-16 shrink-0 overflow-hidden border border-ink/20 bg-paper-deep">
-                          <img
+                        <div className="relative h-16 w-16 shrink-0 overflow-hidden border border-ink/20 bg-paper-deep">
+                          <MediaImage
                             src={hit.coverImage}
                             alt=""
-                            className="h-full w-full object-cover"
+                            sizes="64px"
                           />
                         </div>
                       ) : null}

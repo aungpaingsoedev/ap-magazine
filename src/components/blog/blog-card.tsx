@@ -7,6 +7,7 @@ import {
 import { ReactionBar } from '@/components/blog/reaction-bar';
 import { ShareButton } from '@/components/blog/share-button';
 import { Avatar } from '@/components/ui/avatar';
+import { MediaImage } from '@/components/ui/media-image';
 import { cn } from '@/lib/utils';
 import type { ReactionType } from '@/lib/db/schema';
 
@@ -29,6 +30,7 @@ type BlogCardProps = {
   userReaction?: ReactionType | null;
   isSignedIn?: boolean;
   viewCount?: number;
+  readingTime?: number | null;
 };
 
 const ACCENTS = ['#4f7c7a', '#c57a6a', '#c4a35a', '#3a342f'] as const;
@@ -105,9 +107,10 @@ export function BlogCard({
   userReaction = null,
   isSignedIn = false,
   viewCount = 0,
+  readingTime,
 }: BlogCardProps) {
   const tag = category ?? magazineCategory(slug);
-  const minutes = estimateReadingMinutes(excerpt);
+  const minutes = readingTime ?? estimateReadingMinutes(excerpt);
   const dateLabel = formatMagazineDate(publishedAt);
 
   return (
@@ -136,12 +139,14 @@ export function BlogCard({
       <Link href={`/blog/${slug}`} className="block overflow-hidden">
         <div className="transition-transform duration-500 ease-out group-hover:rotate-[-0.6deg] group-hover:scale-[1.02]">
           {coverImage ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={coverImage}
-              alt=""
-              className="cover-sketch aspect-square w-full object-cover"
-            />
+            <div className="cover-sketch relative aspect-square w-full overflow-hidden">
+              <MediaImage
+                src={coverImage}
+                alt=""
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                priority={index < 2}
+              />
+            </div>
           ) : (
             <CoverArt seed={slug} title={title} />
           )}
@@ -188,7 +193,7 @@ export function BlogCard({
             <p>
               <span className="text-muted/80">Views</span>{' '}
               <span className="font-medium text-ink">
-                {viewCount.toLocaleString()}
+                {viewCount.toLocaleString('en-US')}
               </span>
             </p>
             <p>
