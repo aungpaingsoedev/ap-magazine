@@ -1,0 +1,23 @@
+---
+description: Next.js CMS stack conventions — Neon, Drizzle, Better Auth, shadcn/ui
+alwaysApply: true
+---
+
+# Next.js CMS Architecture
+
+## Stack
+- Next.js 14+ App Router (RSC + Server Actions)
+- Neon PostgreSQL + Drizzle ORM (`src/lib/db/schema.ts`)
+- Better Auth with RBAC (admin, editor, author, viewer)
+- shadcn/ui + Tailwind CSS
+- React Hook Form + Zod (shared schemas in `src/lib/validations/`)
+- Tiptap rich text (JSONB body column)
+
+## Rules
+- Fetch data in Server Components via Drizzle; mutate via Server Actions in `src/actions/`
+- Enforce RBAC with `requireRole()` / `canPerform()` before every mutation
+- Protect `/admin/*` via middleware (`src/middleware.ts`)
+- Content statuses: draft, review, scheduled, published, archived
+- Store rich text + layout in PostgreSQL `jsonb` columns
+- Use `'use client'` only for interactive components (forms, tables, editor)
+- Shared Zod schemas between forms and Server Actions

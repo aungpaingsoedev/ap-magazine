@@ -1,36 +1,120 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Atlas Magazine CMS
 
-## Getting Started
+Next.js App Router magazine site with a protected editorial CMS.
 
-First, run the development server:
+## Stack
+
+- Next.js 16 App Router (RSC + Server Actions)
+- Neon PostgreSQL + Drizzle ORM
+- Better Auth (Google OAuth) with RBAC
+- Tiptap JSONB article bodies
+- Local image uploads in `public/uploads`
+- Socket.IO realtime feed updates when posts are published
+
+## Run locally
 
 ```bash
+npm install
+npm run db:push
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`npm run dev` starts the custom Node server (`server.ts`) with Next.js + Socket.IO on `/api/socketio`. Use `npm run dev:next` only if you want plain Next without realtime.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Required environment variables (`.env`):
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | Neon Postgres connection string |
+| `BETTER_AUTH_SECRET` | Auth secret |
+| `BETTER_AUTH_URL` | Canonical app URL, e.g. `http://localhost:3000` |
+| `NEXT_PUBLIC_APP_URL` | Public origin for auth client, sitemap, RSS |
+| `GOOGLE_CLIENT_ID` | Google OAuth |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth |
+| `ADMIN_EMAIL` | Optional. First Google sign-in with this email is promoted to `admin` |
+| `CRON_SECRET` | Optional. Bearer token for scheduled-publish cron |
 
-## Learn More
+## Seed demo content
 
-To learn more about Next.js, take a look at the following resources:
+Create 20 authors and one published post each:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run db:seed
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Seed emails use the `@seed.atlas.local` domain and are skipped if already present.
 
-## Deploy on Vercel
+1. Set `ADMIN_EMAIL` to your Google account and sign in, **or**
+2. After signing in once:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```sql
+UPDATE "user" SET role = 'admin' WHERE email = 'you@example.com';
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Roles
+
+Existing roles are preserved. Mapping:
+
+| Role | CMS access |
+| --- | --- |
+| `admin` | Everything (super admin) |
+| `editor` | Articles (including publish), categories, tags, authors, media, comments |
+| `author` | Create/edit own articles, submit for review, media |
+| `media_manager` | Media library |
+| `viewer` | Public site only |
+
+Authorization is enforced in Server Actions and admin layouts, not only in the UI.
+
+## Admin
+
+Protected at `/admin` (cookie gate in middleware + server-side permission checks).
+
+- `/admin/dashboard`
+- `/admin/articles` · `/admin/articles/new` · `/admin/articles/[id]`
+- `/admin/categories`
+- `/admin/tags`
+- `/admin/authors`
+- `/admin/media`
+- `/admin/comments`
+- `/admin/users`
+- `/admin/settings`
+- `/admin/seo`
+
+Public write at `/write` still works. Authors without publish permission save as drafts; editors/admins publish immediately.
+
+## Publishing
+
+Article statuses: `draft`, `review`, `scheduled`, `published`, `archived`.
+
+- **Publish** sets status to `published` and `publishedAt` to now.
+- **Schedule** requires a future datetime. Status becomes `scheduled`.
+- Due scheduled posts are published when public pages load, and by:
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/publish
+```
+
+If `CRON_SECRET` is unset, the cron route is open — set it in production.
+
+## Media
+
+Uploads are stored in `uploads/` at the project root (JPEG, PNG, WebP, GIF, max 5 MB) and served at `/uploads/<filename>`. The folder is gitignored. This is local disk storage; it is not durable on serverless hosts without a persistent volume.
+
+## Database
+
+```bash
+npm run db:generate
+npm run db:push
+```
+
+Default categories (`art`, `culture`, `design`, `essay`) and site settings are seeded on first CMS/homepage load.
+
+## Public routes
+
+- `/` magazine homepage
+- `/blog/[slug]`
+- `/authors` · `/authors/[slug]`
+- `/category/[slug]`
+- `/search`
+- `/feed.xml`
+- `/sitemap.xml`

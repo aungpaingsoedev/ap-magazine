@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1788338587831,
+      "tag": "0000_wandering_slayback",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788418603872,
+      "tag": "0001_military_human_fly",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788420549622,
+      "tag": "0002_regular_aqueduct",
+      "breakpoints": true
+    }
+  ]
+}
