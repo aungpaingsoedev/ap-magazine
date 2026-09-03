@@ -3,21 +3,24 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [border-radius:0.3rem_0.7rem_0.35rem_0.65rem/0.65rem_0.3rem_0.7rem_0.4rem]',
   {
     variants: {
       variant: {
-        default: 'bg-zinc-900 text-zinc-50 hover:bg-zinc-800',
-        destructive: 'bg-red-600 text-white hover:bg-red-700',
-        outline: 'border border-zinc-200 bg-white hover:bg-zinc-100',
-        secondary: 'bg-zinc-100 text-zinc-900 hover:bg-zinc-200',
-        ghost: 'hover:bg-zinc-100',
-        link: 'text-zinc-900 underline-offset-4 hover:underline',
+        default:
+          'border-2 border-ink bg-ink text-paper shadow-[2px_2px_0_color-mix(in_srgb,var(--coral)_35%,transparent)] hover:bg-charcoal',
+        destructive: 'border-2 border-coral bg-coral text-paper hover:opacity-90',
+        outline:
+          'border-2 border-ink bg-[color-mix(in_srgb,var(--paper)_90%,white)] text-ink shadow-[2px_2px_0_color-mix(in_srgb,var(--ink)_14%,transparent)] hover:bg-mustard/20',
+        secondary:
+          'border-2 border-ink/40 bg-paper-deep text-ink hover:bg-mustard/15',
+        ghost: 'hover:bg-ink/5 text-ink',
+        link: 'text-ink underline-offset-4 hover:underline',
       },
       size: {
         default: 'h-10 px-4 py-2',
-        sm: 'h-9 rounded-md px-3',
-        lg: 'h-11 rounded-md px-8',
+        sm: 'h-9 px-3',
+        lg: 'h-11 px-8',
         icon: 'h-10 w-10',
       },
     },

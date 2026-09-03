@@ -70,7 +70,7 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
         <TextInput name="youtube" defaultValue={settings.youtube ?? ''} />
       </Field>
       <Field label="Logo path">
-        <TextInput name="logo" defaultValue={settings.logo ?? ''} placeholder="/uploads/logo.png" />
+        <TextInput name="logo" defaultValue={settings.logo ?? ''} placeholder="https://....supabase.co/storage/v1/object/public/media/..." />
       </Field>
       <Field label="Favicon path">
         <TextInput name="favicon" defaultValue={settings.favicon ?? ''} />

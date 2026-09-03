@@ -25,7 +25,7 @@ export function Avatar({ name, image, size = 'md', className }: AvatarProps) {
   return (
     <span
       className={cn(
-        'relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-neutral-300 bg-neutral-100 font-semibold text-neutral-950',
+        'relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-ink bg-paper-deep font-semibold text-ink',
         SIZE[size],
         className,
       )}
@@ -36,7 +36,7 @@ export function Avatar({ name, image, size = 'md', className }: AvatarProps) {
         <img
           src={image}
           alt={name ? `${name} avatar` : 'Avatar'}
-          className="h-full w-full object-cover grayscale"
+          className="h-full w-full object-cover"
         />
       ) : (
         <span>{initials(name)}</span>

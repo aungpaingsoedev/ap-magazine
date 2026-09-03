@@ -31,47 +31,53 @@ type BlogCardProps = {
   viewCount?: number;
 };
 
+const ACCENTS = ['#4f7c7a', '#c57a6a', '#c4a35a', '#3a342f'] as const;
+
 function CoverArt({ seed, title }: { seed: string; title: string }) {
   let hash = 0;
   for (let i = 0; i < seed.length; i += 1) {
     hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
   }
   const variant = hash % 4;
+  const accent = ACCENTS[hash % ACCENTS.length]!;
 
   return (
-    <div className="relative aspect-square w-full overflow-hidden bg-neutral-100">
+    <div className="cover-sketch relative aspect-square w-full overflow-hidden bg-paper-deep">
       <svg
         viewBox="0 0 400 400"
         className="h-full w-full"
         aria-hidden
         role="presentation"
       >
-        <rect width="400" height="400" fill="#f5f5f5" />
+        <rect width="400" height="400" fill="#efe6d6" />
+        <circle cx="320" cy="70" r="48" fill={accent} opacity="0.28" />
+        <circle cx="60" cy="330" r="36" fill={accent} opacity="0.18" />
         {variant === 0 && (
           <>
-            <circle cx="200" cy="200" r="120" fill="none" stroke="#0a0a0a" strokeWidth="2" />
-            <circle cx="200" cy="200" r="70" fill="#0a0a0a" />
-            <rect x="40" y="40" width="80" height="80" fill="#0a0a0a" />
+            <circle cx="200" cy="200" r="118" fill="none" stroke="#1f1a17" strokeWidth="3" strokeDasharray="6 5" />
+            <circle cx="200" cy="200" r="68" fill="none" stroke="#1f1a17" strokeWidth="2.5" />
+            <path d="M90 90 h70 v70 h-70 z" fill="none" stroke="#1f1a17" strokeWidth="2.5" />
           </>
         )}
         {variant === 1 && (
           <>
-            <path d="M0 320 L200 40 L400 320 Z" fill="#0a0a0a" />
-            <circle cx="280" cy="120" r="48" fill="#f5f5f5" stroke="#0a0a0a" strokeWidth="2" />
+            <path d="M30 330 L205 55 L370 330 Z" fill="none" stroke="#1f1a17" strokeWidth="3" />
+            <circle cx="270" cy="140" r="42" fill="none" stroke="#1f1a17" strokeWidth="2.5" />
+            <path d="M120 280 q80 -40 160 0" fill="none" stroke="#1f1a17" strokeWidth="2" />
           </>
         )}
         {variant === 2 && (
           <>
-            <rect x="60" y="60" width="280" height="280" fill="none" stroke="#0a0a0a" strokeWidth="3" />
-            <rect x="110" y="110" width="180" height="180" fill="#0a0a0a" />
-            <line x1="0" y1="200" x2="400" y2="200" stroke="#0a0a0a" strokeWidth="1" />
+            <rect x="58" y="58" width="284" height="284" fill="none" stroke="#1f1a17" strokeWidth="3" rx="8" />
+            <rect x="108" y="108" width="184" height="184" fill="none" stroke="#1f1a17" strokeWidth="2.5" rx="4" />
+            <line x1="20" y1="200" x2="380" y2="200" stroke="#1f1a17" strokeWidth="1.5" strokeDasharray="4 6" />
           </>
         )}
         {variant === 3 && (
           <>
-            <ellipse cx="200" cy="210" rx="130" ry="90" fill="#0a0a0a" />
-            <circle cx="140" cy="110" r="36" fill="none" stroke="#0a0a0a" strokeWidth="2" />
-            <circle cx="260" cy="100" r="22" fill="#0a0a0a" />
+            <ellipse cx="200" cy="215" rx="128" ry="88" fill="none" stroke="#1f1a17" strokeWidth="3" />
+            <circle cx="145" cy="115" r="34" fill="none" stroke="#1f1a17" strokeWidth="2.5" />
+            <circle cx="255" cy="105" r="20" fill={accent} opacity="0.45" stroke="#1f1a17" strokeWidth="2" />
           </>
         )}
       </svg>
@@ -114,13 +120,13 @@ export function BlogCard({
       data-category={tag}
     >
       <div className="mb-4 flex items-center justify-between gap-3">
-        <time className="text-xs text-neutral-500">{dateLabel || '—'}</time>
-        <span className="rounded-full border border-neutral-950 px-2.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase">
+        <time className="text-xs text-muted">{dateLabel || '—'}</time>
+        <span className="sketch-stamp px-2.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase text-ink">
           {tag}
         </span>
       </div>
       {featured || editorsPick ? (
-        <p className="mb-3 text-[10px] font-semibold tracking-[0.16em] uppercase text-neutral-500">
+        <p className="mb-3 text-[10px] font-semibold tracking-[0.16em] text-coral uppercase">
           {[featured ? 'Featured' : null, editorsPick ? "Editor's pick" : null]
             .filter(Boolean)
             .join(' · ')}
@@ -128,13 +134,13 @@ export function BlogCard({
       ) : null}
 
       <Link href={`/blog/${slug}`} className="block overflow-hidden">
-        <div className="transition-transform duration-500 ease-out group-hover:scale-[1.03]">
+        <div className="transition-transform duration-500 ease-out group-hover:rotate-[-0.6deg] group-hover:scale-[1.02]">
           {coverImage ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={coverImage}
               alt=""
-              className="aspect-square w-full object-cover grayscale"
+              className="cover-sketch aspect-square w-full object-cover"
             />
           ) : (
             <CoverArt seed={slug} title={title} />
@@ -144,24 +150,24 @@ export function BlogCard({
 
       <div className="mt-5 flex flex-1 flex-col">
         <Link href={`/blog/${slug}`}>
-          <h2 className="font-display text-xl font-bold leading-snug tracking-tight text-neutral-950 transition-opacity group-hover:opacity-60 sm:text-2xl">
+          <h2 className="font-display text-xl leading-snug text-ink transition-opacity group-hover:opacity-70 sm:text-2xl">
             {title}
           </h2>
         </Link>
 
-        <p className="mt-3 line-clamp-4 flex-1 text-sm leading-relaxed text-neutral-600">
+        <p className="mt-3 line-clamp-4 flex-1 text-sm leading-relaxed text-muted">
           {excerpt?.trim() ||
             'A new story from the magazine — open the piece to read the full article.'}
         </p>
 
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 pt-4 text-xs text-neutral-500">
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t-2 border-dashed border-ink/20 pt-4 text-xs text-muted">
           <div className="flex min-w-0 items-center gap-2">
             {authorSlug ? (
               <Link href={`/authors/${authorSlug}`} className="flex min-w-0 items-center gap-2 hover:opacity-70">
                 <Avatar name={authorName} image={authorImage} size="sm" />
                 <p>
-                  <span className="text-neutral-400">Text</span>{' '}
-                  <span className="font-medium text-neutral-950">
+                  <span className="text-muted/80">Text</span>{' '}
+                  <span className="font-medium text-ink">
                     {authorName ?? 'Anonymous'}
                   </span>
                 </p>
@@ -170,8 +176,8 @@ export function BlogCard({
               <>
                 <Avatar name={authorName} image={authorImage} size="sm" />
                 <p>
-                  <span className="text-neutral-400">Text</span>{' '}
-                  <span className="font-medium text-neutral-950">
+                  <span className="text-muted/80">Text</span>{' '}
+                  <span className="font-medium text-ink">
                     {authorName ?? 'Anonymous'}
                   </span>
                 </p>
@@ -180,14 +186,14 @@ export function BlogCard({
           </div>
           <div className="flex items-center gap-4">
             <p>
-              <span className="text-neutral-400">Views</span>{' '}
-              <span className="font-medium text-neutral-950">
+              <span className="text-muted/80">Views</span>{' '}
+              <span className="font-medium text-ink">
                 {viewCount.toLocaleString()}
               </span>
             </p>
             <p>
-              <span className="text-neutral-400">Duration</span>{' '}
-              <span className="font-medium text-neutral-950">{minutes} Min</span>
+              <span className="text-muted/80">Duration</span>{' '}
+              <span className="font-medium text-ink">{minutes} Min</span>
             </p>
           </div>
         </div>

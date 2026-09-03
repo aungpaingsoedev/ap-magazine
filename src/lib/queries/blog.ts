@@ -56,10 +56,8 @@ export async function getPublishedPosts() {
     .leftJoin(category, eq(content.categoryId, category.id))
     .where(eq(content.status, 'published'))
     .orderBy(
-      desc(content.featured),
-      desc(content.editorsPick),
-      desc(content.displayOrder),
       desc(content.publishedAt),
+      desc(content.createdAt),
     );
 }
 
@@ -88,10 +86,8 @@ export async function getPublishedPostsPage(options?: {
     .leftJoin(category, eq(content.categoryId, category.id))
     .where(eq(content.status, 'published'))
     .orderBy(
-      desc(content.featured),
-      desc(content.editorsPick),
-      desc(content.displayOrder),
       desc(content.publishedAt),
+      desc(content.createdAt),
     )
     .limit(pageSize)
     .offset((page - 1) * pageSize);
@@ -237,6 +233,7 @@ export async function getPostComments(contentId: string) {
       id: comment.id,
       body: comment.body,
       createdAt: comment.createdAt,
+      userId: comment.userId,
       authorName: user.name,
       authorImage: user.image,
     })
@@ -317,4 +314,68 @@ export async function getUserReactionsForContents(
   return new Map(
     rows.map((row) => [row.contentId, row.type as ReactionType]),
   );
+}
+
+export async function listOwnPosts(userId: string) {
+  return db
+    .select({
+      id: content.id,
+      title: content.title,
+      slug: content.slug,
+      excerpt: content.excerpt,
+      coverImage: content.coverImage,
+      status: content.status,
+      publishedAt: content.publishedAt,
+      updatedAt: content.updatedAt,
+      categoryName: category.name,
+    })
+    .from(content)
+    .leftJoin(category, eq(content.categoryId, category.id))
+    .where(eq(content.createdBy, userId))
+    .orderBy(desc(content.createdAt), desc(content.updatedAt));
+}
+
+export async function getPostForEdit(id: string) {
+  const rows = await db
+    .select({
+      id: content.id,
+      title: content.title,
+      slug: content.slug,
+      excerpt: content.excerpt,
+      coverImage: content.coverImage,
+      body: content.body,
+      status: content.status,
+      createdBy: content.createdBy,
+      categoryId: content.categoryId,
+    })
+    .from(content)
+    .where(eq(content.id, id))
+    .limit(1);
+
+  const post = rows[0];
+  if (!post) return null;
+
+  const categories = await db
+    .select({ id: contentCategory.categoryId })
+    .from(contentCategory)
+    .where(eq(contentCategory.contentId, id));
+
+  const categoryIds =
+    categories.length > 0
+      ? categories.map((item) => item.id)
+      : post.categoryId
+        ? [post.categoryId]
+        : [];
+
+  return {
+    id: post.id,
+    title: post.title,
+    slug: post.slug,
+    excerpt: post.excerpt,
+    coverImage: post.coverImage,
+    body: post.body,
+    status: post.status,
+    createdBy: post.createdBy,
+    categoryIds,
+  };
 }

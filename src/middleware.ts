@@ -7,6 +7,7 @@ export async function middleware(request: NextRequest) {
 
   if (
     pathname.startsWith('/write') ||
+    pathname.startsWith('/posts') ||
     pathname.startsWith('/admin') ||
     pathname.startsWith('/profile')
   ) {
@@ -31,6 +32,8 @@ export const config = {
   matcher: [
     '/write',
     '/write/:path*',
+    '/posts',
+    '/posts/:path*',
     '/admin/:path*',
     '/admin',
     '/profile',

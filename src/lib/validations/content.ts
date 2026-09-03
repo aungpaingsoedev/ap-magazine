@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { slugify } from '@/lib/slug';
 
 export const contentStatusSchema = z.enum([
   'draft',
@@ -17,9 +18,7 @@ export const uploadedImageSchema = z
   .string()
   .min(1, 'Image is required')
   .refine(
-    (value) =>
-      value.startsWith('/uploads/') &&
-      /\.(jpe?g|png|webp|gif)$/i.test(value),
+    (value) => isAllowedImageUrl(value),
     'Upload a JPEG, PNG, WebP, or GIF image',
   );
 
@@ -30,10 +29,7 @@ export const optionalImageSchema = z
   .optional()
   .nullable()
   .refine(
-    (value) =>
-      !value ||
-      (value.startsWith('/uploads/') &&
-        /\.(jpe?g|png|webp|gif)$/i.test(value)),
+    (value) => !value || isAllowedImageUrl(value),
     'Upload a JPEG, PNG, WebP, or GIF image',
   );
 
@@ -44,17 +40,46 @@ export const optionalAvatarSchema = z
   .refine(
     (value) =>
       !value ||
-      (value.startsWith('/uploads/') &&
-        /\.(jpe?g|png|webp|gif)$/i.test(value)) ||
-      /^https?:\/\//i.test(value),
+      isAllowedImageUrl(value) ||
+      (value.startsWith('/images/avatars/') &&
+        /\.(jpe?g|png|webp|gif)$/i.test(value)),
     'Upload an image or use a valid photo URL',
   );
+
+function isAllowedImageUrl(value: string): boolean {
+  if (value.startsWith('/uploads/') && /\.(jpe?g|png|webp|gif)$/i.test(value)) {
+    return true;
+  }
+
+  if (/^https?:\/\//i.test(value)) {
+    try {
+      const parsed = new URL(value);
+      return (
+        /\.(jpe?g|png|webp|gif)$/i.test(parsed.pathname) ||
+        parsed.pathname.includes('/storage/v1/object/public/')
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  return false;
+}
 
 export const slugSchema = z
   .string()
   .min(1, 'Slug is required')
   .max(200)
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be kebab-case');
+
+export const optionalSlugSchema = z
+  .string()
+  .optional()
+  .nullable()
+  .transform((value) => {
+    if (!value) return '';
+    return slugify(value);
+  });
 
 export const articleIntentSchema = z.enum([
   'draft',
@@ -185,7 +210,7 @@ export const authorFormSchema = z.object({
 export const profileFormSchema = z.object({
   name: z.string().min(1, 'Name is required').max(120),
   username: z.string().max(80).optional().nullable(),
-  slug: slugSchema.optional().nullable().or(z.literal('')),
+  slug: optionalSlugSchema,
   bio: z.string().max(2000).optional().nullable(),
   website: z.string().url().optional().nullable().or(z.literal('')),
   instagram: z.string().max(200).optional().nullable(),

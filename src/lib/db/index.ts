@@ -1,5 +1,5 @@
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
+import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
 import * as schema from './schema';
 
 function getDatabaseUrl(): string {
@@ -7,12 +7,16 @@ function getDatabaseUrl(): string {
   if (!url) {
     // Allow build to succeed; runtime requires a real connection string
     if (process.env.NEXT_PHASE === 'phase-production-build') {
-      return 'postgresql://build:build@localhost/build';
+      return 'postgresql://build:build@localhost:5432/build';
     }
     throw new Error('DATABASE_URL environment variable is not set');
   }
   return url;
 }
 
-const sql = neon(getDatabaseUrl());
-export const db = drizzle(sql, { schema });
+const client = postgres(getDatabaseUrl(), {
+  prepare: false, // required for Supabase transaction pooler (port 6543)
+  max: 10,
+});
+
+export const db = drizzle(client, { schema });

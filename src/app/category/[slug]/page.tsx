@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { SiteHeader } from '@/components/layout/site-header';
+import { SiteFooter } from '@/components/layout/site-footer';
 import { MagazineFeed } from '@/components/blog/magazine-feed';
 import { getSession } from '@/lib/auth/session';
 import { getActiveCategories, getCategoryBySlug, getSiteSettings } from '@/lib/queries/taxonomy';
@@ -61,18 +62,18 @@ export default async function CategoryPage({
   }));
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
-        <div className="border-b border-neutral-200 py-10">
-          <p className="font-display text-xs font-bold tracking-[0.2em] uppercase text-neutral-500">
+        <div className="border-b-2 border-dashed border-ink/30 py-10">
+          <p className="font-display text-sm tracking-[0.18em] text-teal uppercase">
             Category
           </p>
-          <h1 className="font-display mt-3 text-[clamp(3rem,10vw,6rem)] font-bold leading-[0.95]">
+          <h1 className="font-display hero-sketch-title mt-3 text-[clamp(3rem,10vw,6rem)] leading-[0.95] text-ink">
             {category.name}
           </h1>
           {category.description ? (
-            <p className="mt-4 max-w-xl text-neutral-600">{category.description}</p>
+            <p className="mt-4 max-w-xl text-muted">{category.description}</p>
           ) : null}
         </div>
 
@@ -89,6 +90,7 @@ export default async function CategoryPage({
           activeCategorySlug={slug}
         />
       </main>
+      <SiteFooter />
     </div>
   );
 }

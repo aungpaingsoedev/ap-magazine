@@ -26,8 +26,8 @@ export function CategoryFilter({
   ];
 
   return (
-    <div className="flex flex-col gap-4 border-b border-neutral-200 py-6 sm:flex-row sm:items-center sm:justify-between">
-      <p className="font-display text-xs font-bold tracking-[0.2em] text-neutral-950 uppercase">
+    <div className="flex flex-col gap-4 border-b-2 border-dashed border-ink/30 py-6 sm:flex-row sm:items-center sm:justify-between">
+      <p className="font-display text-sm tracking-[0.14em] text-ink uppercase">
         Categories
       </p>
       <div className="flex flex-wrap gap-2">
@@ -35,10 +35,10 @@ export function CategoryFilter({
           <Link
             key={category.href}
             href={category.href}
-            className={`rounded-full border px-4 py-1.5 text-xs font-semibold tracking-wide uppercase transition-colors duration-200 ${
+            className={`px-4 py-1.5 text-xs font-semibold tracking-wide uppercase transition-colors duration-200 ${
               category.active
-                ? 'border-neutral-950 bg-neutral-950 text-white'
-                : 'border-neutral-950 bg-white text-neutral-950 hover:bg-neutral-100'
+                ? 'sketch-btn-solid'
+                : 'sketch-stamp hover:bg-mustard/20'
             }`}
           >
             {category.name}

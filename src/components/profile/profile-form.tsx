@@ -38,7 +38,7 @@ export function ProfileForm({ profile }: { profile: User }) {
     const result = await updateMyProfile({
       name,
       username,
-      slug: slug || slugify(username || name),
+      slug: slugify(slug || username || name),
       bio,
       website,
       instagram,
@@ -64,9 +64,16 @@ export function ProfileForm({ profile }: { profile: User }) {
         void submit();
       }}
     >
-      <Field label="Avatar photo">
-        <AvatarUpload name={name} value={image} onChange={setImage} />
-      </Field>
+      <AvatarUpload
+        name={name}
+        subtitle={
+          profile.role
+            ? profile.role.charAt(0).toUpperCase() + profile.role.slice(1)
+            : profile.email
+        }
+        value={image}
+        onChange={setImage}
+      />
       <Field label="Name">
         <TextInput
           value={name}

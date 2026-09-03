@@ -1058,7 +1058,7 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": "'Atlas Magazine'"
+          "default": "'AP Magazine'"
         },
         "logo": {
           "name": "logo",

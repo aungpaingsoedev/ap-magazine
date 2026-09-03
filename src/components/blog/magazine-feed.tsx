@@ -113,11 +113,11 @@ export function MagazineFeed({
       <CategoryFilter categories={categories} activeSlug={activeCategorySlug} />
 
       {livePosts.length === 0 ? (
-        <div className="border border-dashed border-neutral-300 px-6 py-20 text-center">
-          <p className="font-display text-lg font-bold text-neutral-950">
+        <div className="border-2 border-dashed border-ink/35 px-6 py-20 text-center sketch-frame">
+          <p className="font-display text-lg text-ink">
             {activeCategorySlug ? 'No stories in this category' : 'No posts yet'}
           </p>
-          <p className="mt-2 text-sm text-neutral-500">
+          <p className="mt-2 text-sm text-muted">
             {activeCategorySlug
               ? 'Try another filter or publish a new piece.'
               : 'Sign in and write the first magazine story. New publishes appear here live.'}
@@ -147,7 +147,7 @@ export function MagazineFeed({
               index={index}
               className={
                 justArrived === post.id
-                  ? 'bg-neutral-50 outline outline-2 outline-offset-[-2px] outline-neutral-950'
+                  ? 'bg-mustard/15 outline outline-2 outline-offset-[-2px] outline-ink'
                   : undefined
               }
             />

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Caveat, Kalam } from 'next/font/google';
+import { Kalam } from 'next/font/google';
 import './globals.css';
 import { getSiteSettings } from '@/lib/queries/taxonomy';
 
@@ -9,15 +9,9 @@ const kalam = Kalam({
   weight: ['300', '400', '700'],
 });
 
-const caveat = Caveat({
-  variable: '--font-caveat',
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-});
-
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
-  const siteName = settings?.siteName ?? 'Atlas Magazine';
+  const siteName = settings?.siteName ?? 'AP Magazine';
 
   return {
     title: {
@@ -36,9 +30,9 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html
       lang="en"
-      className={`${kalam.variable} ${caveat.variable} h-full antialiased`}
+      className={`${kalam.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-white text-neutral-950">
+      <body className="min-h-full flex flex-col text-ink">
         {children}
       </body>
     </html>

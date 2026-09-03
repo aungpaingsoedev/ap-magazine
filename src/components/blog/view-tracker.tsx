@@ -13,7 +13,7 @@ export function ViewTracker({ contentId }: ViewTrackerProps) {
   useEffect(() => {
     if (recorded.current || !contentId) return;
 
-    const key = `atlas:viewed:${contentId}`;
+    const key = `ap:viewed:${contentId}`;
     try {
       if (sessionStorage.getItem(key)) return;
       sessionStorage.setItem(key, '1');

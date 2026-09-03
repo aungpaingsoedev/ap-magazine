@@ -33,7 +33,7 @@ app.prepare().then(() => {
   });
 
   httpServer.listen(port, () => {
-    console.log(`> Atlas ready on http://${hostname}:${port}`);
+    console.log(`> AP Magazine ready on http://${hostname}:${port}`);
     console.log(`> Socket.IO path /api/socketio`);
   });
 });

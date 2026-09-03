@@ -44,7 +44,7 @@ CREATE TABLE "media" (
 --> statement-breakpoint
 CREATE TABLE "site_settings" (
 	"id" text PRIMARY KEY NOT NULL,
-	"site_name" text DEFAULT 'Atlas Magazine' NOT NULL,
+	"site_name" text DEFAULT 'AP Magazine' NOT NULL,
 	"logo" text,
 	"favicon" text,
 	"description" text,

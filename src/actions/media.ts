@@ -7,7 +7,7 @@ import { media } from '@/lib/db/schema';
 import { requirePermission } from '@/lib/auth/session';
 import { mediaMetaSchema } from '@/lib/validations/content';
 import { fail, ok, publicError, type ActionResult } from '@/lib/action-result';
-import { deleteUpload } from '@/lib/cms/storage';
+import { deleteUpload, isSupabaseStorageUrl } from '@/lib/cms/storage';
 
 export async function updateMediaAlt(input: unknown): Promise<ActionResult> {
   try {
@@ -35,7 +35,7 @@ export async function deleteMedia(id: string): Promise<ActionResult> {
 
     await db.delete(media).where(eq(media.id, id));
 
-    if (item.url.startsWith('/uploads/')) {
+    if (item.url.startsWith('/uploads/') || isSupabaseStorageUrl(item.url)) {
       await deleteUpload(item.url);
     }
 

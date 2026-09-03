@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { SiteHeader } from '@/components/layout/site-header';
+import { SiteFooter } from '@/components/layout/site-footer';
 import { BlogReader } from '@/components/blog/blog-reader';
 import { ReactionBar } from '@/components/blog/reaction-bar';
 import { CommentSection } from '@/components/blog/comment-section';
@@ -108,12 +109,12 @@ export default async function BlogPostPage({ params }: PageProps) {
       : undefined,
     publisher: {
       '@type': 'Organization',
-      name: settings?.siteName ?? 'Atlas Magazine',
+      name: settings?.siteName ?? 'AP Magazine',
     },
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="flex min-h-screen flex-col">
       <ViewTracker contentId={post.id} />
       <script
         type="application/ld+json"
@@ -123,28 +124,28 @@ export default async function BlogPostPage({ params }: PageProps) {
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="text-xs font-semibold tracking-[0.16em] text-neutral-500 uppercase transition-opacity hover:opacity-60"
+          className="text-xs font-semibold tracking-[0.16em] text-muted uppercase transition-opacity hover:opacity-60"
         >
           ← Magazine
         </Link>
 
         <article className="mt-8 space-y-10">
-          <header className="space-y-6 border-b border-neutral-200 pb-10">
+          <header className="space-y-6 border-b-2 border-dashed border-ink/30 pb-10">
             <div className="flex flex-wrap items-center gap-3">
-              <time className="text-xs text-neutral-500">{dateLabel || '—'}</time>
+              <time className="text-xs text-muted">{dateLabel || '—'}</time>
               {displayCategories.map((item) =>
                 item.slug ? (
                   <Link
                     key={item.id}
                     href={`/category/${item.slug}`}
-                    className="rounded-full border border-neutral-950 px-2.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase"
+                    className="sketch-stamp px-2.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase"
                   >
                     {item.name}
                   </Link>
                 ) : (
                   <span
                     key={item.id}
-                    className="rounded-full border border-neutral-950 px-2.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase"
+                    className="sketch-stamp px-2.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase"
                   >
                     {item.name}
                   </span>
@@ -152,12 +153,12 @@ export default async function BlogPostPage({ params }: PageProps) {
               )}
             </div>
 
-            <h1 className="font-display text-4xl leading-[1.05] font-black tracking-tight text-neutral-950 sm:text-5xl">
+            <h1 className="font-display hero-sketch-title text-4xl leading-[1.05] tracking-tight text-ink sm:text-5xl">
               {post.title}
             </h1>
 
             {post.excerpt && (
-              <p className="max-w-2xl text-lg leading-relaxed text-neutral-600">
+              <p className="max-w-2xl text-lg leading-relaxed text-muted">
                 {post.excerpt}
               </p>
             )}
@@ -167,40 +168,40 @@ export default async function BlogPostPage({ params }: PageProps) {
               <img
                 src={post.coverImage}
                 alt=""
-                className="aspect-[16/10] w-full object-cover grayscale"
+                className="cover-sketch aspect-[16/10] w-full object-cover"
               />
             )}
 
-            <div className="flex flex-wrap items-center justify-between gap-4 border-t border-neutral-200 pt-5 text-sm">
-              <div className="flex items-center gap-3 text-neutral-500">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-t-2 border-dashed border-ink/20 pt-5 text-sm">
+              <div className="flex items-center gap-3 text-muted">
                 <Avatar
                   name={post.authorName}
                   image={post.authorImage}
                   size="md"
                 />
                 <p>
-                  <span className="text-neutral-400">Text</span>{' '}
+                  <span className="text-muted/80">Text</span>{' '}
                   {post.authorSlug ? (
-                    <Link href={`/authors/${post.authorSlug}`} className="font-medium text-neutral-950 hover:underline">
+                    <Link href={`/authors/${post.authorSlug}`} className="font-medium text-ink hover:underline">
                       {post.authorName ?? 'Anonymous'}
                     </Link>
                   ) : (
-                    <span className="font-medium text-neutral-950">
+                    <span className="font-medium text-ink">
                       {post.authorName ?? 'Anonymous'}
                     </span>
                   )}
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <p className="text-neutral-500">
-                  <span className="text-neutral-400">Views</span>{' '}
-                  <span className="font-medium text-neutral-950">
+                <p className="text-muted">
+                  <span className="text-muted/80">Views</span>{' '}
+                  <span className="font-medium text-ink">
                     {(post.viewCount ?? 0).toLocaleString()}
                   </span>
                 </p>
-                <p className="text-neutral-500">
-                  <span className="text-neutral-400">Duration</span>{' '}
-                  <span className="font-medium text-neutral-950">{minutes} Min</span>
+                <p className="text-muted">
+                  <span className="text-muted/80">Duration</span>{' '}
+                  <span className="font-medium text-ink">{minutes} Min</span>
                 </p>
                 <ShareButton
                   slug={post.slug}
@@ -235,10 +236,12 @@ export default async function BlogPostPage({ params }: PageProps) {
               contentId={post.id}
               comments={comments}
               isSignedIn={Boolean(session?.user)}
+              currentUserId={session?.user?.id ?? null}
             />
           </div>
         </article>
       </main>
+      <SiteFooter />
     </div>
   );
 }

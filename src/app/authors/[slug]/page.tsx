@@ -1,6 +1,7 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { SiteHeader } from '@/components/layout/site-header';
+import { SiteFooter } from '@/components/layout/site-footer';
 import { BlogCard } from '@/components/blog/blog-card';
 import { MagazinePagination } from '@/components/blog/magazine-pagination';
 import { Avatar } from '@/components/ui/avatar';
@@ -31,6 +32,10 @@ export default async function AuthorPage({
     getSession(),
   ]);
 
+  if (session?.user?.id === author.id) {
+    redirect('/profile');
+  }
+
   const result = await getAuthorArticles(author.id, {
     page: requestedPage,
     pageSize: settings?.articlesPerPage ?? 12,
@@ -45,7 +50,7 @@ export default async function AuthorPage({
   ]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-10">
         <Link href="/authors" className="text-xs font-semibold tracking-[0.16em] uppercase text-neutral-500">
@@ -97,6 +102,7 @@ export default async function AuthorPage({
           basePath={`/authors/${slug}`}
         />
       </main>
+      <SiteFooter />
     </div>
   );
 }

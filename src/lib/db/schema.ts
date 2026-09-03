@@ -345,7 +345,7 @@ export const media = pgTable(
 
 export const siteSettings = pgTable('site_settings', {
   id: text('id').primaryKey(),
-  siteName: text('site_name').notNull().default('Atlas Magazine'),
+  siteName: text('site_name').notNull().default('AP Magazine'),
   logo: text('logo'),
   favicon: text('favicon'),
   description: text('description'),

@@ -10,7 +10,7 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
   internal_server_error: 'Something went wrong during sign-in. Please try again.',
 };
 
-export function LoginForm() {
+export function LoginForm({ callbackURL }: { callbackURL?: string }) {
   const searchParams = useSearchParams();
   const authErrorCode = searchParams.get('error');
   const [error, setError] = useState<string | null>(
@@ -21,7 +21,7 @@ export function LoginForm() {
   );
   const [loading, setLoading] = useState(false);
 
-  const callbackURL = searchParams.get('callbackUrl') ?? '/';
+  const resolvedCallbackURL = callbackURL ?? searchParams.get('callbackUrl') ?? '/';
 
   async function signInWithGoogle() {
     setLoading(true);
@@ -29,7 +29,7 @@ export function LoginForm() {
 
     const result = await authClient.signIn.social({
       provider: 'google',
-      callbackURL,
+      callbackURL: resolvedCallbackURL,
     });
 
     if (result.error) {
@@ -39,18 +39,18 @@ export function LoginForm() {
   }
 
   return (
-    <div className="border border-neutral-200 p-8">
+    <div className="sketch-frame p-6 sm:p-8">
       <button
         type="button"
         disabled={loading}
         onClick={signInWithGoogle}
-        className="flex w-full items-center justify-center gap-3 border border-neutral-950 bg-neutral-950 px-4 py-3 text-sm font-semibold tracking-wide text-white uppercase transition-opacity hover:opacity-80 disabled:opacity-50"
+        className="sketch-btn-solid flex w-full items-center justify-center gap-3 px-4 py-3 text-sm font-semibold tracking-wide uppercase disabled:opacity-50"
       >
         <GoogleIcon />
         {loading ? 'Redirecting...' : 'Continue with Google'}
       </button>
       {error && (
-        <p className="mt-4 text-center text-sm text-red-600">{error}</p>
+        <p className="mt-4 text-center text-sm text-coral">{error}</p>
       )}
     </div>
   );

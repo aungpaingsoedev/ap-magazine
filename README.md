@@ -1,14 +1,14 @@
-# Atlas Magazine CMS
+# AP Magazine CMS
 
 Next.js App Router magazine site with a protected editorial CMS.
 
 ## Stack
 
 - Next.js 16 App Router (RSC + Server Actions)
-- Neon PostgreSQL + Drizzle ORM
+- Supabase Postgres + Drizzle ORM
+- Supabase Storage for cover/avatar/media uploads
 - Better Auth (Google OAuth) with RBAC
 - Tiptap JSONB article bodies
-- Local image uploads in `public/uploads`
 - Socket.IO realtime feed updates when posts are published
 
 ## Run locally
@@ -21,11 +21,32 @@ npm run dev
 
 `npm run dev` starts the custom Node server (`server.ts`) with Next.js + Socket.IO on `/api/socketio`. Use `npm run dev:next` only if you want plain Next without realtime.
 
-Required environment variables (`.env`):
+### Supabase setup
+
+1. Create a Supabase project.
+2. Copy the **Database** connection string into `DATABASE_URL` (pooler URI is fine).
+3. Copy **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`.
+4. Copy **service_role** key → `SUPABASE_SERVICE_ROLE_KEY` (server only; never expose to the browser).
+5. Create a **public** Storage bucket named `media` (or set `SUPABASE_STORAGE_BUCKET`).
+
+Public read policy example (bucket `media`):
+
+```sql
+create policy "Public read media"
+on storage.objects for select
+using (bucket_id = 'media');
+```
+
+The app uploads with the service role key, so public **select** is what matters for displaying covers.
+
+Required environment variables (see `.env.example`):
 
 | Variable | Purpose |
 | --- | --- |
-| `DATABASE_URL` | Neon Postgres connection string |
+| `DATABASE_URL` | Supabase Postgres connection string |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service role key for Storage uploads |
+| `SUPABASE_STORAGE_BUCKET` | Optional. Defaults to `media` |
 | `BETTER_AUTH_SECRET` | Auth secret |
 | `BETTER_AUTH_URL` | Canonical app URL, e.g. `http://localhost:3000` |
 | `NEXT_PUBLIC_APP_URL` | Public origin for auth client, sitemap, RSS |
@@ -42,7 +63,7 @@ Create 20 authors and one published post each:
 npm run db:seed
 ```
 
-Seed emails use the `@seed.atlas.local` domain and are skipped if already present.
+Seed emails use the `@seed.ap.local` domain and are skipped if already present.
 
 1. Set `ADMIN_EMAIL` to your Google account and sign in, **or**
 2. After signing in once:
@@ -80,7 +101,7 @@ Protected at `/admin` (cookie gate in middleware + server-side permission checks
 - `/admin/settings`
 - `/admin/seo`
 
-Public write at `/write` still works. Authors without publish permission save as drafts; editors/admins publish immediately.
+Public write at `/write` still works.
 
 ## Publishing
 
@@ -98,7 +119,7 @@ If `CRON_SECRET` is unset, the cron route is open — set it in production.
 
 ## Media
 
-Uploads are stored in `uploads/` at the project root (JPEG, PNG, WebP, GIF, max 5 MB) and served at `/uploads/<filename>`. The folder is gitignored. This is local disk storage; it is not durable on serverless hosts without a persistent volume.
+Uploads go to **Supabase Storage** (`media` bucket by default): JPEG, PNG, WebP, GIF, max 5 MB. The returned public URL is stored in the database.
 
 ## Database
 
@@ -115,6 +136,6 @@ Default categories (`art`, `culture`, `design`, `essay`) and site settings are s
 - `/blog/[slug]`
 - `/authors` · `/authors/[slug]`
 - `/category/[slug]`
-- `/search`
+- `/posts` · `/write` · `/write/[id]`
 - `/feed.xml`
 - `/sitemap.xml`

@@ -1,20 +1,23 @@
 import 'dotenv/config';
 import { nanoid } from 'nanoid';
-import { eq, like } from 'drizzle-orm';
+import { eq, inArray, like, or } from 'drizzle-orm';
 import { db } from '../src/lib/db';
 import { category, content, user, type RichTextDocument } from '../src/lib/db/schema';
 import { ensureCmsDefaults } from '../src/lib/db/seed';
 import { slugify } from '../src/lib/slug';
 import { estimateReadingMinutes } from '../src/lib/blog-utils';
 
-const SEED_EMAIL_DOMAIN = 'seed.atlas.local';
-const COVER_IMAGES = [
-  '/uploads/GUMe4M1pzVoXDgmOYaOVp.jpg',
-  '/uploads/4Kt9BRW9xgd4m5--uJkHu.jpg',
-  '/uploads/6MkOFuB4YiGQF4KE65HpV.png',
-  '/uploads/eOjNeld8Q3DwBrBCmovLZ.jpg',
-  '/uploads/MPbdpTGizAkkNUmM8PiEu.png',
-];
+const SEED_EMAIL_DOMAIN = 'seed.ap.local';
+const LEGACY_SEED_EMAIL_DOMAIN = 'seed.atlas.local';
+const COVER_IMAGES = Array.from(
+  { length: 20 },
+  (_, index) => `/images/covers/default-${index + 1}.jpg`,
+);
+
+const AUTHOR_PHOTOS = Array.from(
+  { length: 20 },
+  (_, index) => `/images/avatars/avatar-${String(index + 1).padStart(2, '0')}.png`,
+);
 
 const AUTHORS = [
   { name: 'Amina Okeke', username: 'amina-okeke', bio: 'Writes about West African contemporary art and city archives.' },
@@ -89,7 +92,7 @@ function paragraph(text: string): RichTextDocument {
         content: [
           {
             type: 'text',
-            text: 'Replace these seeded posts with your own reporting whenever you are ready. Categories, covers, and authors are already wired into the Atlas Magazine CMS.',
+            text: 'Replace these seeded posts with your own reporting whenever you are ready. Categories, covers, and authors are already wired into the AP Magazine CMS.',
           },
         ],
       },
@@ -97,28 +100,68 @@ function paragraph(text: string): RichTextDocument {
   };
 }
 
+async function clearSeedData() {
+  const existingSeedUsers = await db
+    .select({ id: user.id })
+    .from(user)
+    .where(
+      or(
+        like(user.email, `%@${SEED_EMAIL_DOMAIN}`),
+        like(user.email, `%@${LEGACY_SEED_EMAIL_DOMAIN}`),
+      ),
+    );
+
+  const seedUserIds = existingSeedUsers.map((row) => row.id);
+  if (seedUserIds.length === 0) return;
+
+  await db.delete(content).where(inArray(content.createdBy, seedUserIds));
+  await db.delete(user).where(inArray(user.id, seedUserIds));
+
+  console.log(
+    `Removed ${seedUserIds.length} seed users and their published posts.`,
+  );
+}
+
 async function seedDemo() {
+  const force = process.argv.includes('--force');
+
   if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL is not set');
   }
 
   await ensureCmsDefaults();
 
-  const existingSeedUsers = await db
-    .select({ id: user.id })
-    .from(user)
-    .where(like(user.email, `%@${SEED_EMAIL_DOMAIN}`));
+  if (force) {
+    await clearSeedData();
+  } else {
+    const existingSeedUsers = await db
+      .select({ id: user.id })
+      .from(user)
+      .where(
+        or(
+          like(user.email, `%@${SEED_EMAIL_DOMAIN}`),
+          like(user.email, `%@${LEGACY_SEED_EMAIL_DOMAIN}`),
+        ),
+      );
 
-  if (existingSeedUsers.length >= AUTHORS.length) {
-    console.log(
-      `Seed users already present (${existingSeedUsers.length}). Skipping demo seed.`,
-    );
-    return;
+    if (existingSeedUsers.length >= AUTHORS.length) {
+      console.log(
+        `Seed users already present (${existingSeedUsers.length}). Skipping demo seed.`,
+      );
+      console.log('Run with --force to overwrite: npm run db:seed:force');
+      return;
+    }
   }
 
   const categories = await db.select().from(category);
   const categoryBySlug = new Map(categories.map((row) => [row.slug, row.id]));
   const now = new Date();
+
+  if (AUTHORS.length !== COVER_IMAGES.length || AUTHORS.length !== AUTHOR_PHOTOS.length) {
+    throw new Error(
+      `Seed assets must be unique 1:1. Authors=${AUTHORS.length}, covers=${COVER_IMAGES.length}, photos=${AUTHOR_PHOTOS.length}`,
+    );
+  }
 
   console.log('Creating 20 seed authors and 20 published posts...');
 
@@ -141,6 +184,7 @@ async function seedDemo() {
         name: author.name,
         email,
         emailVerified: true,
+        image: AUTHOR_PHOTOS[index]!,
         role: 'author',
         username: author.username,
         slug: author.username,
@@ -170,7 +214,7 @@ async function seedDemo() {
       title: post.title,
       slug,
       excerpt: post.excerpt,
-      coverImage: COVER_IMAGES[index % COVER_IMAGES.length],
+      coverImage: COVER_IMAGES[index]!,
       body,
       status: 'published',
       featured: index % 7 === 0,

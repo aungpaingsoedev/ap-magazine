@@ -50,7 +50,7 @@ export function AdminShell({
             href="/admin/dashboard"
             className="font-display text-2xl font-bold"
           >
-            Atlas CMS
+            AP CMS
           </Link>
         </div>
         <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">

@@ -10,6 +10,7 @@ export const blogPostSchema = z.object({
   coverImage: coverImageSchema,
   categoryIds: z.array(z.string().min(1)).min(1, 'Select at least one category'),
   body: richTextDocumentSchema,
+  publish: z.boolean().default(false),
 });
 
 export const commentSchema = z.object({

@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { eq, isNull, sql } from 'drizzle-orm';
+import { eq, isNull, sql, and } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import {
   category,
@@ -39,15 +39,30 @@ async function seedCms(): Promise<void> {
   if (!existingSettings) {
     await db.insert(siteSettings).values({
       id: 'default',
-      siteName: 'Atlas Magazine',
+      siteName: 'AP Magazine',
       description: 'Stories, essays, and culture from the community',
       homepageHeadline: 'Magazine',
-      footerText: 'Atlas Magazine',
+      footerText: 'AP Magazine',
       articlesPerPage: 12,
-      defaultSeoTitle: 'Atlas Magazine',
+      defaultSeoTitle: 'AP Magazine',
       defaultSeoDescription: 'Stories, essays, and culture from the community',
       updatedAt: new Date(),
     });
+  } else {
+    await db
+      .update(siteSettings)
+      .set({
+        siteName: 'AP Magazine',
+        footerText: 'AP Magazine',
+        defaultSeoTitle: 'AP Magazine',
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(siteSettings.id, 'default'),
+          eq(siteSettings.siteName, 'Atlas Magazine'),
+        ),
+      );
   }
 
   const existingCategories = await db.select({ slug: category.slug }).from(category);

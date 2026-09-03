@@ -36,7 +36,7 @@ async function saveFile(
   const extension = EXTENSIONS[file.type] ?? 'jpg';
   const filename = `${nanoid()}.${extension}`;
   const buffer = Buffer.from(await file.arrayBuffer());
-  const url = await writeUpload(filename, buffer);
+  const url = await writeUpload(filename, buffer, file.type);
   const dimensions = getImageDimensions(buffer, file.type);
   const id = nanoid();
 

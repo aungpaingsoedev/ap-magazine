@@ -1,8 +1,8 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBlogPost } from '@/actions/blog';
+import { createBlogPost, updateBlogPost } from '@/actions/blog';
 import { RichTextEditor } from '@/components/editor/rich-text-editor';
 import { MultiSelect } from '@/components/ui/multi-select';
 import type { RichTextDocument } from '@/lib/db/schema';
@@ -12,24 +12,67 @@ type CategoryOption = {
   name: string;
 };
 
-export function WriteForm({ categories }: { categories: CategoryOption[] }) {
+export type WriteFormInitial = {
+  id: string;
+  title: string;
+  excerpt: string | null;
+  coverImage: string | null;
+  categoryIds: string[];
+  body: RichTextDocument;
+  status: string;
+};
+
+function emptyDoc(): RichTextDocument {
+  return { type: 'doc', content: [] };
+}
+
+export function WriteForm({
+  categories,
+  initial,
+}: {
+  categories: CategoryOption[];
+  initial?: WriteFormInitial;
+}) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [title, setTitle] = useState('');
-  const [excerpt, setExcerpt] = useState('');
+  const isEdit = Boolean(initial);
+  const [title, setTitle] = useState(initial?.title ?? '');
+  const [excerpt, setExcerpt] = useState(initial?.excerpt ?? '');
   const [categoryIds, setCategoryIds] = useState<string[]>(
-    categories[0] ? [categories[0].id] : [],
+    initial?.categoryIds?.length
+      ? initial.categoryIds
+      : categories[0]
+        ? [categories[0].id]
+        : [],
   );
-  const [coverImage, setCoverImage] = useState('');
+  const [coverImage, setCoverImage] = useState(initial?.coverImage ?? '');
   const [uploadingCover, setUploadingCover] = useState(false);
-  const [body, setBody] = useState<RichTextDocument>({
-    type: 'doc',
-    content: [],
-  });
+  const [body, setBody] = useState<RichTextDocument>(
+    initial?.body ?? emptyDoc(),
+  );
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<'draft' | 'publish' | null>(null);
 
-  async function handleCoverUpload(event: React.ChangeEvent<HTMLInputElement>) {
+  useEffect(() => {
+    if (!initial) return;
+    setTitle(initial.title);
+    setExcerpt(initial.excerpt ?? '');
+    setCategoryIds(
+      initial.categoryIds.length
+        ? initial.categoryIds
+        : categories[0]
+          ? [categories[0].id]
+          : [],
+    );
+    setCoverImage(initial.coverImage ?? '');
+    setBody(initial.body ?? emptyDoc());
+    setError(null);
+    setLoading(null);
+    // Only re-bind when switching posts; key on the parent also remounts the form.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: bind once per post id
+  }, [initial?.id]);
+
+  async function handleCoverUpload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -61,8 +104,7 @@ export function WriteForm({ categories }: { categories: CategoryOption[] }) {
     }
   }
 
-  async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
+  async function handleSave(publish: boolean) {
     setError(null);
 
     if (!coverImage) {
@@ -75,32 +117,42 @@ export function WriteForm({ categories }: { categories: CategoryOption[] }) {
       return;
     }
 
-    setLoading(true);
+    setLoading(publish ? 'publish' : 'draft');
 
-    const result = await createBlogPost({
+    const payload = {
       title,
       excerpt,
       coverImage,
       categoryIds,
       body,
-    });
+      publish,
+    };
+
+    const result = initial
+      ? await updateBlogPost(initial.id, payload)
+      : await createBlogPost(payload);
 
     if (!result.success) {
       setError(result.error);
-      setLoading(false);
+      setLoading(null);
       return;
     }
 
-    router.push(/blog/ + result.data.slug);
+    router.push(result.data.published ? '/' : '/posts');
     router.refresh();
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+      }}
+      className="space-y-8"
+    >
       <div className="space-y-2">
         <label
           htmlFor="title"
-          className="font-display text-xs font-bold tracking-[0.16em] text-neutral-950 uppercase"
+          className="font-display text-xs font-bold tracking-[0.16em] text-ink uppercase"
         >
           Title
         </label>
@@ -110,12 +162,12 @@ export function WriteForm({ categories }: { categories: CategoryOption[] }) {
           onChange={(event) => setTitle(event.target.value)}
           placeholder="Your story title"
           required
-          className="w-full border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-950 placeholder:text-neutral-400 focus:border-neutral-950 focus:outline-none"
+          className="w-full border-2 border-ink/30 bg-[color-mix(in_srgb,var(--paper)_90%,white)] px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none"
         />
       </div>
 
       <div className="space-y-2">
-        <p className="font-display text-xs font-bold tracking-[0.16em] text-neutral-950 uppercase">
+        <p className="font-display text-xs font-bold tracking-[0.16em] text-ink uppercase">
           Categories
         </p>
         <MultiSelect
@@ -135,7 +187,7 @@ export function WriteForm({ categories }: { categories: CategoryOption[] }) {
       <div className="space-y-2">
         <label
           htmlFor="excerpt"
-          className="font-display text-xs font-bold tracking-[0.16em] text-neutral-950 uppercase"
+          className="font-display text-xs font-bold tracking-[0.16em] text-ink uppercase"
         >
           Summary
         </label>
@@ -144,13 +196,13 @@ export function WriteForm({ categories }: { categories: CategoryOption[] }) {
           value={excerpt}
           onChange={(event) => setExcerpt(event.target.value)}
           placeholder="A short summary for the magazine grid"
-          className="w-full border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-950 placeholder:text-neutral-400 focus:border-neutral-950 focus:outline-none"
+          className="w-full border-2 border-ink/30 bg-[color-mix(in_srgb,var(--paper)_90%,white)] px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:border-ink focus:outline-none"
         />
       </div>
 
       <div className="space-y-2">
-        <p className="font-display text-xs font-bold tracking-[0.16em] text-neutral-950 uppercase">
-          Cover photo <span className="text-neutral-500">Required</span>
+        <p className="font-display text-xs font-bold tracking-[0.16em] text-ink uppercase">
+          Cover photo <span className="text-muted">Required</span>
         </p>
         <input
           ref={fileInputRef}
@@ -161,20 +213,20 @@ export function WriteForm({ categories }: { categories: CategoryOption[] }) {
           onChange={handleCoverUpload}
         />
         {coverImage ? (
-          <div className="space-y-3">
-            <div className="relative overflow-hidden border border-neutral-300">
+          <div className="max-w-sm space-y-3">
+            <div className="cover-sketch relative overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={coverImage}
                 alt="Cover preview"
-                className="aspect-[4/3] w-full object-cover grayscale"
+                className="aspect-square w-full object-cover"
               />
             </div>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadingCover}
-              className="text-xs font-semibold tracking-wider uppercase underline underline-offset-4"
+              className="text-xs font-semibold tracking-wider uppercase underline decoration-dashed underline-offset-4"
             >
               {uploadingCover ? 'Uploading...' : 'Replace cover'}
             </button>
@@ -184,12 +236,12 @@ export function WriteForm({ categories }: { categories: CategoryOption[] }) {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploadingCover}
-            className="flex aspect-[4/3] w-full flex-col items-center justify-center border border-dashed border-neutral-400 bg-neutral-50 px-6 text-center transition-colors hover:bg-neutral-100 disabled:opacity-60"
+            className="flex h-40 w-full max-w-sm flex-col items-center justify-center border-2 border-dashed border-ink/40 bg-paper-deep/60 px-4 text-center transition-colors hover:bg-mustard/15 disabled:opacity-60 [border-radius:0.35rem_0.8rem_0.4rem_0.7rem/0.7rem_0.35rem_0.8rem_0.45rem]"
           >
-            <span className="font-display text-sm font-bold tracking-wide uppercase">
+            <span className="font-display text-sm tracking-wide uppercase text-ink">
               {uploadingCover ? 'Uploading...' : 'Add cover photo'}
             </span>
-            <span className="mt-2 text-xs text-neutral-500">
+            <span className="mt-2 text-xs text-muted">
               JPEG, PNG, WebP, or GIF · max 5 MB
             </span>
           </button>
@@ -197,21 +249,44 @@ export function WriteForm({ categories }: { categories: CategoryOption[] }) {
       </div>
 
       <div className="space-y-2">
-        <p className="font-display text-xs font-bold tracking-[0.16em] text-neutral-950 uppercase">
+        <p className="font-display text-xs font-bold tracking-[0.16em] text-ink uppercase">
           Content
         </p>
-        <RichTextEditor value={body} onChange={setBody} />
+        <RichTextEditor
+          key={initial?.id ?? 'new-post'}
+          value={body}
+          onChange={setBody}
+        />
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-coral">{error}</p>}
 
-      <button
-        type="submit"
-        disabled={loading || uploadingCover || !coverImage || categoryIds.length === 0}
-        className="border border-neutral-950 bg-neutral-950 px-6 py-3 text-xs font-semibold tracking-wider text-white uppercase transition-opacity hover:opacity-80 disabled:opacity-40"
-      >
-        {loading ? 'Publishing...' : 'Publish'}
-      </button>
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={() => handleSave(false)}
+          disabled={loading !== null || uploadingCover || !coverImage || categoryIds.length === 0}
+          className="sketch-btn px-6 py-3 text-xs font-semibold tracking-wider uppercase disabled:opacity-40"
+        >
+          {loading === 'draft'
+            ? 'Saving…'
+            : isEdit
+              ? 'Save as draft'
+              : 'Save draft'}
+        </button>
+        <button
+          type="button"
+          onClick={() => handleSave(true)}
+          disabled={loading !== null || uploadingCover || !coverImage || categoryIds.length === 0}
+          className="sketch-btn-solid px-6 py-3 text-xs font-semibold tracking-wider uppercase disabled:opacity-40"
+        >
+          {loading === 'publish'
+            ? 'Publishing…'
+            : isEdit && initial?.status === 'published'
+              ? 'Update & publish'
+              : 'Publish'}
+        </button>
+      </div>
     </form>
   );
 }

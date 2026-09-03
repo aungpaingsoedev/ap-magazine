@@ -1,4 +1,5 @@
 import { SiteHeader } from '@/components/layout/site-header';
+import { SiteFooter } from '@/components/layout/site-footer';
 import { MagazineFeed } from '@/components/blog/magazine-feed';
 import { getSession } from '@/lib/auth/session';
 import {
@@ -55,13 +56,19 @@ export default async function HomePage({
   }));
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
-        <div className="magazine-hero-enter border-b border-neutral-200 py-10 sm:py-14 lg:py-16">
-          <h1 className="font-display text-[clamp(3.5rem,14vw,9.5rem)] leading-[0.9] font-bold text-neutral-950">
+        <div className="magazine-hero-enter border-b-2 border-dashed border-ink/30 py-10 sm:py-14 lg:py-16">
+          <p className="mb-4 text-xs font-semibold tracking-[0.22em] text-teal uppercase">
+            Sketchbook issue
+          </p>
+          <h1 className="font-display hero-sketch-title text-[clamp(3.5rem,14vw,9.5rem)] leading-[0.9] text-ink">
             {settings?.homepageHeadline ?? 'Magazine'}
           </h1>
+          <p className="mt-5 max-w-xl text-base text-muted sm:text-lg">
+            Stories drawn in ink — essays, culture, and quiet observations from the studio.
+          </p>
         </div>
 
         <MagazineFeed
@@ -76,6 +83,7 @@ export default async function HomePage({
           basePath="/"
         />
       </main>
+      <SiteFooter />
     </div>
   );
 }

@@ -26,7 +26,10 @@ export async function updateMyProfile(
     }
 
     const data = parsed.data;
-    const slug = data.slug || slugify(data.username || data.name) || session.user.id;
+    const slug =
+      data.slug ||
+      slugify(data.username || data.name) ||
+      slugify(session.user.id);
 
     const [slugTaken] = await db
       .select({ id: user.id })

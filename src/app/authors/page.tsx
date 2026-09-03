@@ -1,22 +1,30 @@
 import Link from 'next/link';
 import { SiteHeader } from '@/components/layout/site-header';
+import { SiteFooter } from '@/components/layout/site-footer';
 import { Avatar } from '@/components/ui/avatar';
+import { getSession } from '@/lib/auth/session';
 import { listAuthors } from '@/lib/queries/admin';
 
 export default async function AuthorsPage() {
+  const session = await getSession();
   const authors = (await listAuthors()).filter(
-    (person) => person.active && person.role !== 'viewer',
+    (person) =>
+      person.active &&
+      person.role !== 'viewer' &&
+      person.id !== session?.user?.id,
   );
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-        <p className="font-display text-xs font-bold tracking-[0.2em] uppercase text-neutral-500">
+        <p className="font-display text-sm tracking-[0.18em] text-teal uppercase">
           Contributors
         </p>
-        <h1 className="font-display mt-3 text-4xl font-black">Authors</h1>
-        <div className="mt-10 divide-y divide-neutral-200 border-y border-neutral-200">
+        <h1 className="font-display hero-sketch-title mt-3 text-4xl text-ink sm:text-5xl">
+          Authors
+        </h1>
+        <div className="mt-10 divide-y-2 divide-dashed divide-ink/20 border-y-2 border-dashed border-ink/30">
           {authors.map((author) => (
             <Link
               key={author.id}
@@ -26,20 +34,23 @@ export default async function AuthorsPage() {
               <div className="flex items-start gap-4">
                 <Avatar name={author.name} image={author.image} size="lg" />
                 <div>
-                  <h2 className="font-display text-xl font-bold">{author.name}</h2>
+                  <h2 className="font-display text-xl text-ink">{author.name}</h2>
                   {author.bio ? (
-                    <p className="mt-2 max-w-2xl text-sm text-neutral-600">{author.bio}</p>
+                    <p className="mt-2 max-w-2xl text-sm text-muted">{author.bio}</p>
                   ) : null}
                 </div>
               </div>
-              <span className="text-xs font-semibold tracking-wider uppercase">View</span>
+              <span className="sketch-stamp px-3 py-1 text-xs font-semibold tracking-wider uppercase">
+                View
+              </span>
             </Link>
           ))}
           {authors.length === 0 ? (
-            <p className="py-10 text-sm text-neutral-500">No authors yet.</p>
+            <p className="py-10 text-sm text-muted">No authors yet.</p>
           ) : null}
         </div>
       </main>
+      <SiteFooter />
     </div>
   );
 }

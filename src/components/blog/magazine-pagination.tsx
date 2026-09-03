@@ -38,11 +38,11 @@ export function MagazinePagination({
     <nav
       aria-label="Pagination"
       className={cn(
-        'flex flex-wrap items-center justify-between gap-4 border-t border-neutral-200 py-8',
+        'flex flex-wrap items-center justify-between gap-4 border-t-2 border-dashed border-ink/30 py-8',
         className,
       )}
     >
-      <p className="text-xs tracking-[0.16em] text-neutral-500 uppercase">
+      <p className="text-xs tracking-[0.16em] text-muted uppercase">
         Page {page} of {totalPages}
       </p>
 
@@ -51,10 +51,8 @@ export function MagazinePagination({
           href={hrefForPage(basePath, page - 1)}
           aria-disabled={page <= 1}
           className={cn(
-            'border border-neutral-950 px-3 py-2 text-[10px] font-semibold tracking-[0.16em] uppercase transition-colors',
-            page <= 1
-              ? 'pointer-events-none opacity-30'
-              : 'bg-white text-neutral-950 hover:bg-neutral-100',
+            'sketch-btn px-3 py-2 text-[10px] font-semibold tracking-[0.16em] uppercase',
+            page <= 1 && 'pointer-events-none opacity-30',
           )}
         >
           Prev
@@ -66,16 +64,14 @@ export function MagazinePagination({
           return (
             <span key={item} className="flex items-center gap-2">
               {showGap ? (
-                <span className="px-1 text-xs text-neutral-400">…</span>
+                <span className="px-1 text-xs text-muted">…</span>
               ) : null}
               <Link
                 href={hrefForPage(basePath, item)}
                 aria-current={item === page ? 'page' : undefined}
                 className={cn(
-                  'min-w-9 border border-neutral-950 px-3 py-2 text-center text-[10px] font-semibold tracking-[0.16em] uppercase transition-colors',
-                  item === page
-                    ? 'bg-neutral-950 text-white'
-                    : 'bg-white text-neutral-950 hover:bg-neutral-100',
+                  'min-w-9 px-3 py-2 text-center text-[10px] font-semibold tracking-[0.16em] uppercase',
+                  item === page ? 'sketch-btn-solid' : 'sketch-btn',
                 )}
               >
                 {item}
@@ -88,10 +84,8 @@ export function MagazinePagination({
           href={hrefForPage(basePath, page + 1)}
           aria-disabled={page >= totalPages}
           className={cn(
-            'border border-neutral-950 px-3 py-2 text-[10px] font-semibold tracking-[0.16em] uppercase transition-colors',
-            page >= totalPages
-              ? 'pointer-events-none opacity-30'
-              : 'bg-white text-neutral-950 hover:bg-neutral-100',
+            'sketch-btn px-3 py-2 text-[10px] font-semibold tracking-[0.16em] uppercase',
+            page >= totalPages && 'pointer-events-none opacity-30',
           )}
         >
           Next

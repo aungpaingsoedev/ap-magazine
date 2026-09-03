@@ -5,15 +5,15 @@ import {
 } from '@/lib/realtime/events';
 
 const globalForIo = globalThis as typeof globalThis & {
-  __atlasIo?: IOServer;
+  __apIo?: IOServer;
 };
 
 export function setIO(io: IOServer) {
-  globalForIo.__atlasIo = io;
+  globalForIo.__apIo = io;
 }
 
 export function getIO(): IOServer | undefined {
-  return globalForIo.__atlasIo;
+  return globalForIo.__apIo;
 }
 
 export function emitBlogCreated(post: RealtimeBlogPost) {

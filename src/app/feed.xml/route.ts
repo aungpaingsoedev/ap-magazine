@@ -34,9 +34,9 @@ export async function GET() {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
-    <title>${escapeXml(settings?.siteName ?? 'Atlas Magazine')}</title>
+    <title>${escapeXml(settings?.siteName ?? 'AP Magazine')}</title>
     <link>${base}</link>
-    <description>${escapeXml(settings?.description ?? 'Atlas Magazine')}</description>
+    <description>${escapeXml(settings?.description ?? 'AP Magazine')}</description>
     ${items}
   </channel>
 </rss>`;
