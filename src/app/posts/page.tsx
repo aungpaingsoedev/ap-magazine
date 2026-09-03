@@ -8,6 +8,8 @@ import { formatMagazineDate } from '@/lib/blog-utils';
 import { getSession } from '@/lib/auth/session';
 import { listOwnPosts } from '@/lib/queries/blog';
 
+export const dynamic = 'force-dynamic';
+
 function statusLabel(status: string) {
   if (status === 'published') return 'Public';
   if (status === 'draft') return 'Draft';

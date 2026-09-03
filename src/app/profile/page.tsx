@@ -5,6 +5,8 @@ import { ProfileForm } from '@/components/profile/profile-form';
 import { getSession } from '@/lib/auth/session';
 import { getUserProfileById } from '@/lib/queries/profile';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ProfilePage() {
   const session = await getSession();
   if (!session?.user) {

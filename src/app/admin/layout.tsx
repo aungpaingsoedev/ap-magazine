@@ -3,6 +3,8 @@ import { AdminShell } from '@/components/admin/admin-shell';
 import { can, getSession, type Permission } from '@/lib/auth/session';
 import { ensureCmsDefaults } from '@/lib/db/seed';
 
+export const dynamic = 'force-dynamic';
+
 const ALL_PERMISSIONS: Permission[] = [
   'admin.access',
   'articles.create',

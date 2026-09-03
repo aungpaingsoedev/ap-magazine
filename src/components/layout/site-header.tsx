@@ -1,7 +1,8 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { getSession } from '@/lib/auth/session';
 import { getSiteSettings } from '@/lib/queries/taxonomy';
-import { SignInDialog } from '@/components/auth/sign-in-dialog';
+import { SignInDialog, WelcomeSignInDialog } from '@/components/auth/sign-in-dialog';
 import { SignOutButton } from '@/components/auth/sign-out-button';
 import { SearchDialog } from '@/components/blog/search-dialog';
 import { Avatar } from '@/components/ui/avatar';
@@ -12,6 +13,11 @@ export async function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b-2 border-dashed border-ink/30 bg-[color-mix(in_srgb,var(--paper)_92%,white)]/95 backdrop-blur supports-[backdrop-filter]:bg-[color-mix(in_srgb,var(--paper)_88%,white)]/90">
+      {session?.user ? null : (
+        <Suspense fallback={null}>
+          <WelcomeSignInDialog />
+        </Suspense>
+      )}
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-5 sm:px-6 lg:px-10">
         <Link
           href="/"
