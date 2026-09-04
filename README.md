@@ -50,10 +50,33 @@ Compose defaults auth URLs to `http://localhost:3000`.
 
 ### Auth setup
 
-1. Create a Google OAuth client.
-2. Set authorized redirect URI to `{APP_URL}/api/auth/callback/google`.
-3. Copy client ID/secret into `.env`.
-4. Set `BETTER_AUTH_URL` and `NEXT_PUBLIC_APP_URL` to the same public origin (e.g. `http://localhost:3000`).
+1. Create a Google OAuth client (**Web application**).
+2. In Google Cloud Console, set:
+
+**Authorized JavaScript origins**
+```text
+http://localhost:3000
+https://magazine.aungpaingsoe.dev
+```
+
+**Authorized redirect URIs** (must include `/api` — Better Auth route is `/api/auth/...`)
+```text
+http://localhost:3000/api/auth/callback/google
+https://magazine.aungpaingsoe.dev/api/auth/callback/google
+```
+
+Do **not** use `/auth/callback/google` (missing `/api`) — Google will accept the URI but login will fail or show policy errors if origins/redirects don’t match the live site.
+
+3. Prefer **HTTPS** for the real domain. Avoid `http://` domain origins except localhost.
+4. Copy client ID/secret into `.env`.
+5. Set both URLs to the same public origin:
+
+```env
+NEXT_PUBLIC_APP_URL=https://magazine.aungpaingsoe.dev
+BETTER_AUTH_URL=https://magazine.aungpaingsoe.dev
+```
+
+Then recreate Docker: `docker compose up -d --force-recreate`
 
 Required environment variables (see `.env.example`):
 

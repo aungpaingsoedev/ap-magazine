@@ -10,7 +10,7 @@ export default async function WritePage() {
   return (
     <SiteShell>
       <SiteHeader />
-      <main className="site-pad flex-1 py-10">
+      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-10 border-b-2 border-dashed border-ink/30 pb-8">
           <p className="font-display text-sm tracking-[0.18em] text-teal uppercase">
             Contribute
@@ -18,7 +18,7 @@ export default async function WritePage() {
           <h1 className="font-display hero-sketch-title mt-3 text-4xl tracking-tight text-ink sm:text-5xl">
             Write
           </h1>
-          <p className="mt-3 max-w-2xl text-muted">
+          <p className="mt-3 text-muted">
             Share a story with the magazine. Save a draft privately, or publish
             to appear on the front page.
           </p>

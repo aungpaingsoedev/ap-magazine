@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { SiteHeader } from '@/components/layout/site-header';
 import { SiteFooter } from '@/components/layout/site-footer';
+import { SiteShell } from '@/components/layout/site-shell';
 import { BlogCard } from '@/components/blog/blog-card';
 import { MagazinePagination } from '@/components/blog/magazine-pagination';
 import { Avatar } from '@/components/ui/avatar';
@@ -50,23 +51,46 @@ export default async function AuthorPage({
   ]);
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <SiteShell>
       <SiteHeader />
-      <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-10">
-        <Link href="/authors" className="text-xs font-semibold tracking-[0.16em] uppercase text-neutral-500">
+      <main className="site-pad flex-1 py-12">
+        <Link
+          href="/authors"
+          className="text-xs font-semibold tracking-[0.16em] uppercase text-muted"
+        >
           ← Authors
         </Link>
-        <header className="mt-8 max-w-2xl border-b border-neutral-200 pb-10">
+        <header className="mt-8 max-w-4xl border-b-2 border-dashed border-ink/30 pb-10">
           <div className="flex items-start gap-5">
             <Avatar name={author.name} image={author.image} size="xl" />
             <div>
-              <h1 className="font-display text-4xl font-black">{author.name}</h1>
-              {author.bio ? <p className="mt-4 text-neutral-600">{author.bio}</p> : null}
+              <h1 className="font-display hero-sketch-title text-4xl text-ink sm:text-5xl">
+                {author.name}
+              </h1>
+              {author.bio ? (
+                <p className="mt-4 text-muted">{author.bio}</p>
+              ) : null}
               <div className="mt-6 flex flex-wrap gap-4 text-sm">
-                {author.website ? <a className="underline" href={author.website}>Website</a> : null}
-                {author.instagram ? <a className="underline" href={author.instagram}>Instagram</a> : null}
-                {author.twitter ? <a className="underline" href={author.twitter}>X</a> : null}
-                {author.youtube ? <a className="underline" href={author.youtube}>YouTube</a> : null}
+                {author.website ? (
+                  <a className="underline decoration-dashed underline-offset-4" href={author.website}>
+                    Website
+                  </a>
+                ) : null}
+                {author.instagram ? (
+                  <a className="underline decoration-dashed underline-offset-4" href={author.instagram}>
+                    Instagram
+                  </a>
+                ) : null}
+                {author.twitter ? (
+                  <a className="underline decoration-dashed underline-offset-4" href={author.twitter}>
+                    X
+                  </a>
+                ) : null}
+                {author.youtube ? (
+                  <a className="underline decoration-dashed underline-offset-4" href={author.youtube}>
+                    YouTube
+                  </a>
+                ) : null}
               </div>
             </div>
           </div>
@@ -95,7 +119,7 @@ export default async function AuthorPage({
           ))}
         </div>
         {result.rows.length === 0 ? (
-          <p className="py-16 text-sm text-neutral-500">No published articles yet.</p>
+          <p className="py-16 text-sm text-muted">No published articles yet.</p>
         ) : null}
         <MagazinePagination
           page={result.page}
@@ -104,6 +128,6 @@ export default async function AuthorPage({
         />
       </main>
       <SiteFooter />
-    </div>
+    </SiteShell>
   );
 }

@@ -37,7 +37,7 @@ export default async function AuthorsPage() {
                 <div>
                   <h2 className="font-display text-xl text-ink">{author.name}</h2>
                   {author.bio ? (
-                    <p className="mt-2 max-w-2xl text-sm text-muted">{author.bio}</p>
+                    <p className="mt-2 max-w-4xl text-sm text-muted">{author.bio}</p>
                   ) : null}
                 </div>
               </div>
