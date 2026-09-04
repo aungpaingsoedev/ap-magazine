@@ -41,6 +41,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# sqlite database
+/data/*
+!/data/.gitkeep
+
 # user-uploaded images
 /uploads/*
 !/uploads/.gitkeep

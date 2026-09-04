@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { SiteHeader } from '@/components/layout/site-header';
 import { SiteFooter } from '@/components/layout/site-footer';
+import { SiteShell } from '@/components/layout/site-shell';
 import { Avatar } from '@/components/ui/avatar';
 import { getSession } from '@/lib/auth/session';
 import { listAuthors } from '@/lib/queries/admin';
@@ -15,9 +16,9 @@ export default async function AuthorsPage() {
   );
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <SiteShell>
       <SiteHeader />
-      <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+      <main className="site-pad flex-1 py-12">
         <p className="font-display text-sm tracking-[0.18em] text-teal uppercase">
           Contributors
         </p>
@@ -51,6 +52,6 @@ export default async function AuthorsPage() {
         </div>
       </main>
       <SiteFooter />
-    </div>
+    </SiteShell>
   );
 }

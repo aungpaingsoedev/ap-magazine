@@ -5,10 +5,10 @@ Next.js App Router magazine site with a protected editorial CMS.
 ## Stack
 
 - Next.js 16 App Router (RSC + Server Actions)
-- Supabase Postgres + Drizzle ORM
-- Supabase Storage for cover/avatar/media uploads
+- SQLite + Drizzle ORM (`data/cms.db`)
+- Local disk uploads (`uploads/` served at `/uploads/...`)
 - Better Auth (Google OAuth) with RBAC
-- Tiptap JSONB article bodies
+- Tiptap JSON article bodies
 
 ## Run locally
 
@@ -18,35 +18,37 @@ npm run db:push
 npm run dev
 ```
 
-### Supabase setup
+Uploads are stored in `uploads/` and served through `/api/files`. The SQLite database lives at `data/cms.db` by default (override with `DATABASE_URL`).
 
-1. Create a Supabase project.
-2. Copy the **Database** connection string into `DATABASE_URL` (pooler URI is fine).
-3. Copy **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`.
-4. Copy **service_role** key → `SUPABASE_SERVICE_ROLE_KEY` (server only; never expose to the browser).
-5. Create a **public** Storage bucket named `media` (or set `SUPABASE_STORAGE_BUCKET`).
+### Docker (port 3031)
 
-Public read policy example (bucket `media`):
-
-```sql
-create policy "Public read media"
-on storage.objects for select
-using (bucket_id = 'media');
+```bash
+docker compose up --build
 ```
 
-The app uploads with the service role key, so public **select** is what matters for displaying covers.
+App: http://localhost:3031
+
+SQLite and uploads persist in Docker volumes. For Google OAuth, add redirect URI:
+
+`http://localhost:3031/api/auth/callback/google`
+
+Compose defaults auth URLs to `http://localhost:3031` (overrides `.env` localhost:3000).
+
+### Auth setup
+
+1. Create a Google OAuth client.
+2. Set authorized redirect URI to `{APP_URL}/api/auth/callback/google`.
+3. Copy client ID/secret into `.env`.
+4. Set `BETTER_AUTH_URL` and `NEXT_PUBLIC_APP_URL` to the same public origin (e.g. `http://localhost:3000`).
 
 Required environment variables (see `.env.example`):
 
 | Variable | Purpose |
 | --- | --- |
-| `DATABASE_URL` | Supabase Postgres connection string |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
-| `SUPABASE_SERVICE_ROLE_KEY` | Service role key for Storage uploads |
-| `SUPABASE_STORAGE_BUCKET` | Optional. Defaults to `media` |
+| `DATABASE_URL` | Optional. SQLite file path. Defaults to `./data/cms.db` |
 | `BETTER_AUTH_SECRET` | Auth secret |
-| `BETTER_AUTH_URL` | Canonical app URL, e.g. `http://localhost:3000` |
-| `NEXT_PUBLIC_APP_URL` | Public origin for auth client, sitemap, RSS |
+| `BETTER_AUTH_URL` | Canonical app URL. Local: `http://localhost:3000` |
+| `NEXT_PUBLIC_APP_URL` | Same public origin (sitemap/RSS/trusted origins) |
 | `GOOGLE_CLIENT_ID` | Google OAuth |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth |
 | `ADMIN_EMAIL` | Optional. First Google sign-in with this email is promoted to `admin` |
@@ -116,7 +118,7 @@ If `CRON_SECRET` is unset, the cron route is open — set it in production.
 
 ## Media
 
-Uploads go to **Supabase Storage** (`media` bucket by default): JPEG, PNG, WebP, GIF, max 5 MB. The returned public URL is stored in the database.
+Uploads go to the local `uploads/` folder: JPEG, PNG, WebP, GIF, max 5 MB. Public URLs look like `/uploads/<id>.jpg`.
 
 ## Database
 
@@ -136,3 +138,7 @@ Default categories (`art`, `culture`, `design`, `essay`) and site settings are s
 - `/posts` · `/write` · `/write/[id]`
 - `/feed.xml`
 - `/sitemap.xml`
+
+## Hosting note
+
+SQLite and local uploads need a persistent filesystem (local machine, VPS, Docker volume). Ephemeral serverless hosts (default Vercel) will not keep `data/cms.db` or `uploads/` between deploys.

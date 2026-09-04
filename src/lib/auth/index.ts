@@ -5,19 +5,39 @@ import { db } from '@/lib/db';
 import * as schema from '@/lib/db/schema';
 import { slugify } from '@/lib/slug';
 
-const appUrl = process.env.BETTER_AUTH_URL ?? 'http://localhost:3000';
+const appUrl =
+  process.env.BETTER_AUTH_URL ??
+  process.env.NEXT_PUBLIC_APP_URL ??
+  'http://localhost:3000';
+
+function authHosts(): string[] {
+  const hosts = new Set<string>(['localhost:3000', '127.0.0.1:3000', '*.vercel.app']);
+  for (const value of [process.env.BETTER_AUTH_URL, process.env.NEXT_PUBLIC_APP_URL]) {
+    if (!value) continue;
+    try {
+      hosts.add(new URL(value).host);
+    } catch {
+      // ignore invalid env URLs
+    }
+  }
+  return [...hosts];
+}
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: appUrl,
+  baseURL: {
+    allowedHosts: authHosts(),
+    fallback: appUrl,
+  },
   trustedOrigins: [
     appUrl,
     process.env.NEXT_PUBLIC_APP_URL,
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+    'https://*.vercel.app',
   ].filter((origin): origin is string => Boolean(origin)),
   database: drizzleAdapter(db, {
-    provider: 'pg',
+    provider: 'sqlite',
     schema: {
       user: schema.user,
       session: schema.session,
@@ -29,7 +49,7 @@ export const auth = betterAuth({
     storeStateStrategy: 'cookie',
   },
   onAPIError: {
-    errorURL: `${appUrl}/login`,
+    errorURL: '/login',
   },
   socialProviders: {
     google: {

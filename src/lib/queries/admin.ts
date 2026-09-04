@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, ilike, or, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, like, or, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import {
   category,
@@ -36,11 +36,11 @@ export async function listAdminArticles(filters: ArticleListFilters) {
     const term = `%${filters.q}%`;
     conditions.push(
       or(
-        ilike(content.title, term),
-        ilike(content.slug, term),
-        ilike(content.excerpt, term),
-        ilike(user.name, term),
-        ilike(category.name, term),
+        like(content.title, term),
+        like(content.slug, term),
+        like(content.excerpt, term),
+        like(user.name, term),
+        like(category.name, term),
       ),
     );
   }
@@ -262,7 +262,7 @@ export async function getAuthorArticles(
 
 export async function listMedia(q?: string) {
   const where = q
-    ? or(ilike(media.filename, `%${q}%`), ilike(media.alt, `%${q}%`))
+    ? or(like(media.filename, `%${q}%`), like(media.alt, `%${q}%`))
     : undefined;
 
   return db
@@ -320,11 +320,11 @@ export async function searchPublishedArticles(q: string) {
       and(
         eq(content.status, 'published'),
         or(
-          ilike(content.title, term),
-          ilike(content.slug, term),
-          ilike(content.excerpt, term),
-          ilike(user.name, term),
-          ilike(category.name, term),
+          like(content.title, term),
+          like(content.slug, term),
+          like(content.excerpt, term),
+          like(user.name, term),
+          like(category.name, term),
         ),
       ),
     )

@@ -67,11 +67,16 @@ export async function getArticleCategories(contentId: string) {
 }
 
 export const getSiteSettings = cache(async () => {
-  await ensureCmsDefaults();
-  const rows = await db
-    .select()
-    .from(siteSettings)
-    .where(eq(siteSettings.id, 'default'))
-    .limit(1);
-  return rows[0] ?? null;
+  try {
+    await ensureCmsDefaults();
+    const rows = await db
+      .select()
+      .from(siteSettings)
+      .where(eq(siteSettings.id, 'default'))
+      .limit(1);
+    return rows[0] ?? null;
+  } catch {
+    // Build/prerender may run before schema exists
+    return null;
+  }
 });

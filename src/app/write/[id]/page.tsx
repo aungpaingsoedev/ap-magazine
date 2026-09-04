@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { SiteHeader } from '@/components/layout/site-header';
 import { SiteFooter } from '@/components/layout/site-footer';
+import { SiteShell } from '@/components/layout/site-shell';
 import { WriteForm } from '@/components/blog/write-form';
 import { can, getSession } from '@/lib/auth/session';
 import { getPostForEdit } from '@/lib/queries/blog';
@@ -35,9 +36,9 @@ export default async function EditPostPage({
   const categories = await getActiveCategories();
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <SiteShell>
       <SiteHeader />
-      <main className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-10">
+      <main className="site-pad flex-1 py-10">
         <div className="mb-10 border-b-2 border-dashed border-ink/30 pb-8">
           <p className="font-display text-sm tracking-[0.18em] text-teal uppercase">
             Edit
@@ -75,6 +76,6 @@ export default async function EditPostPage({
         </div>
       </main>
       <SiteFooter />
-    </div>
+    </SiteShell>
   );
 }

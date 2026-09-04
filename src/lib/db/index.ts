@@ -1,24 +1,44 @@
-import postgres from 'postgres';
-import { drizzle } from 'drizzle-orm/postgres-js';
+import fs from 'node:fs';
+import path from 'node:path';
+import Database from 'better-sqlite3';
+import { drizzle } from 'drizzle-orm/better-sqlite3';
 import * as schema from './schema';
 
-function getDatabaseUrl(): string {
-  const url = process.env.DATABASE_URL;
-  if (!url) {
-    // Allow build to succeed; runtime requires a real connection string
-    if (process.env.NEXT_PHASE === 'phase-production-build') {
-      return 'postgresql://build:build@localhost:5432/build';
-    }
-    throw new Error('DATABASE_URL environment variable is not set');
+const DEFAULT_DB_PATH = path.join(process.cwd(), 'data', 'cms.db');
+
+function resolveDbPath(): string {
+  const fromEnv = process.env.DATABASE_URL?.trim();
+  if (!fromEnv || fromEnv === ':memory:') {
+    return fromEnv === ':memory:' ? ':memory:' : DEFAULT_DB_PATH;
   }
-  return url;
+  if (fromEnv.startsWith('file:')) {
+    return fromEnv.slice('file:'.length);
+  }
+  return fromEnv;
 }
 
-const client = postgres(getDatabaseUrl(), {
-  prepare: false, // required for Supabase transaction pooler (port 6543)
-  max: process.env.VERCEL ? 1 : 5,
-  connect_timeout: 10,
-  idle_timeout: 20,
-});
+function openSqlite() {
+  const dbPath = resolveDbPath();
+  if (dbPath !== ':memory:') {
+    fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+  }
+
+  const sqlite = new Database(dbPath);
+  sqlite.pragma('journal_mode = WAL');
+  sqlite.pragma('foreign_keys = ON');
+  return sqlite;
+}
+
+const globalForDb = globalThis as typeof globalThis & {
+  __apSqlite?: Database.Database;
+};
+
+const client =
+  globalForDb.__apSqlite ??
+  openSqlite();
+
+if (process.env.NODE_ENV !== 'production') {
+  globalForDb.__apSqlite = client;
+}
 
 export const db = drizzle(client, { schema });

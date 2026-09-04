@@ -11,7 +11,7 @@ export async function SiteFooter() {
 
   return (
     <footer className="mt-auto border-t-2 border-dashed border-ink/30">
-      <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-8 text-center sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:text-left lg:px-10">
+      <div className="site-pad flex flex-col gap-2 py-8 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
         <p className="text-sm text-muted">
           © {year} {siteName}
           {customNote && customNote !== siteName ? (

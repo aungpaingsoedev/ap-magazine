@@ -109,11 +109,10 @@ async function seedCms(): Promise<void> {
   }
 
   try {
-    await db.execute(sql`
-      INSERT INTO content_category (content_id, category_id)
+    db.run(sql`
+      INSERT OR IGNORE INTO content_category (content_id, category_id)
       SELECT id, category_id FROM content
       WHERE category_id IS NOT NULL
-      ON CONFLICT DO NOTHING
     `);
   } catch {
     // content_category may not exist until migration is applied

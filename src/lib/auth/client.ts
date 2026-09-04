@@ -1,5 +1,4 @@
 import { createAuthClient } from 'better-auth/react';
 
-export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
-});
+// Same-origin `/api/auth` — do not hardcode localhost or it breaks on Vercel.
+export const authClient = createAuthClient();

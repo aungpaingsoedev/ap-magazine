@@ -22,6 +22,8 @@ export function MediaImage({
   width,
   height,
 }: MediaImageProps) {
+  const unoptimized = src.startsWith('/uploads/') || src.startsWith('/images/');
+
   if (fill) {
     return (
       <Image
@@ -30,6 +32,7 @@ export function MediaImage({
         fill
         sizes={sizes}
         priority={priority}
+        unoptimized={unoptimized}
         className={cn('object-cover', className)}
       />
     );
@@ -43,6 +46,7 @@ export function MediaImage({
       height={height ?? 96}
       sizes={sizes}
       priority={priority}
+      unoptimized={unoptimized}
       className={cn('object-cover', className)}
     />
   );

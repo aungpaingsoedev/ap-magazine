@@ -1,63 +1,59 @@
 import { relations } from 'drizzle-orm';
 import {
-  boolean,
   index,
   integer,
-  jsonb,
-  pgEnum,
-  pgTable,
   primaryKey,
+  sqliteTable,
   text,
-  timestamp,
   uniqueIndex,
-} from 'drizzle-orm/pg-core';
+} from 'drizzle-orm/sqlite-core';
 
-/** Content lifecycle statuses */
-export const contentStatusEnum = pgEnum('content_status', [
+export const CONTENT_STATUSES = [
   'draft',
   'review',
   'scheduled',
   'published',
   'archived',
-]);
+] as const;
 
-/**
- * RBAC roles (existing values preserved).
- * admin ≈ super admin, editor, author ≈ writer, media_manager, viewer
- */
-export const userRoleEnum = pgEnum('user_role', [
+export const USER_ROLES = [
   'admin',
   'editor',
   'author',
   'media_manager',
   'viewer',
-]);
+] as const;
 
-/** Reaction types for blog posts */
-export const reactionTypeEnum = pgEnum('reaction_type', [
-  'like',
-  'love',
-  'insightful',
-]);
+export const REACTION_TYPES = ['like', 'love', 'insightful'] as const;
 
-export const commentStatusEnum = pgEnum('comment_status', [
+export const COMMENT_STATUSES = [
   'pending',
   'approved',
   'rejected',
   'spam',
-]);
+] as const;
+
+const ts = (name: string) =>
+  integer(name, { mode: 'timestamp_ms' })
+    .notNull()
+    .$defaultFn(() => new Date());
+
+const optionalTs = (name: string) =>
+  integer(name, { mode: 'timestamp_ms' });
 
 // ─── Better Auth tables ───────────────────────────────────────────────────────
 
-export const user = pgTable(
+export const user = sqliteTable(
   'user',
   {
     id: text('id').primaryKey(),
     name: text('name').notNull(),
     email: text('email').notNull().unique(),
-    emailVerified: boolean('email_verified').notNull().default(false),
+    emailVerified: integer('email_verified', { mode: 'boolean' })
+      .notNull()
+      .default(false),
     image: text('image'),
-    role: userRoleEnum('role').notNull().default('author'),
+    role: text('role', { enum: USER_ROLES }).notNull().default('author'),
     username: text('username'),
     slug: text('slug'),
     bio: text('bio'),
@@ -65,13 +61,9 @@ export const user = pgTable(
     instagram: text('instagram'),
     twitter: text('twitter'),
     youtube: text('youtube'),
-    active: boolean('active').notNull().default(true),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    active: integer('active', { mode: 'boolean' }).notNull().default(true),
+    createdAt: ts('created_at'),
+    updatedAt: ts('updated_at'),
   },
   (table) => [
     uniqueIndex('user_username_uidx').on(table.username),
@@ -79,16 +71,12 @@ export const user = pgTable(
   ],
 );
 
-export const session = pgTable('session', {
+export const session = sqliteTable('session', {
   id: text('id').primaryKey(),
-  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
   token: text('token').notNull().unique(),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
-    .defaultNow()
-    .notNull(),
+  createdAt: ts('created_at'),
+  updatedAt: ts('updated_at'),
   ipAddress: text('ip_address'),
   userAgent: text('user_agent'),
   userId: text('user_id')
@@ -96,7 +84,7 @@ export const session = pgTable('session', {
     .references(() => user.id, { onDelete: 'cascade' }),
 });
 
-export const account = pgTable(
+export const account = sqliteTable(
   'account',
   {
     id: text('id').primaryKey(),
@@ -109,20 +97,12 @@ export const account = pgTable(
     accessToken: text('access_token'),
     refreshToken: text('refresh_token'),
     idToken: text('id_token'),
-    accessTokenExpiresAt: timestamp('access_token_expires_at', {
-      withTimezone: true,
-    }),
-    refreshTokenExpiresAt: timestamp('refresh_token_expires_at', {
-      withTimezone: true,
-    }),
+    accessTokenExpiresAt: optionalTs('access_token_expires_at'),
+    refreshTokenExpiresAt: optionalTs('refresh_token_expires_at'),
     scope: text('scope'),
     password: text('password'),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: ts('created_at'),
+    updatedAt: ts('updated_at'),
   },
   (table) => [
     uniqueIndex('account_issuer_account_id_uidx').on(
@@ -132,18 +112,18 @@ export const account = pgTable(
   ],
 );
 
-export const verification = pgTable('verification', {
+export const verification = sqliteTable('verification', {
   id: text('id').primaryKey(),
   identifier: text('identifier').notNull(),
   value: text('value').notNull(),
-  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+  expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
+  createdAt: optionalTs('created_at').$defaultFn(() => new Date()),
+  updatedAt: optionalTs('updated_at').$defaultFn(() => new Date()),
 });
 
 // ─── CMS taxonomy ─────────────────────────────────────────────────────────────
 
-export const category = pgTable(
+export const category = sqliteTable(
   'category',
   {
     id: text('id').primaryKey(),
@@ -152,29 +132,21 @@ export const category = pgTable(
     description: text('description'),
     image: text('image'),
     sortOrder: integer('sort_order').notNull().default(0),
-    active: boolean('active').notNull().default(true),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    active: integer('active', { mode: 'boolean' }).notNull().default(true),
+    createdAt: ts('created_at'),
+    updatedAt: ts('updated_at'),
   },
   (table) => [uniqueIndex('category_slug_uidx').on(table.slug)],
 );
 
-export const tag = pgTable(
+export const tag = sqliteTable(
   'tag',
   {
     id: text('id').primaryKey(),
     name: text('name').notNull(),
     slug: text('slug').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: ts('created_at'),
+    updatedAt: ts('updated_at'),
   },
   (table) => [uniqueIndex('tag_slug_uidx').on(table.slug)],
 );
@@ -186,7 +158,7 @@ export type RichTextDocument = {
   content?: unknown[];
 };
 
-export const content = pgTable(
+export const content = sqliteTable(
   'content',
   {
     id: text('id').primaryKey(),
@@ -194,34 +166,34 @@ export const content = pgTable(
     slug: text('slug').notNull().unique(),
     excerpt: text('excerpt'),
     coverImage: text('cover_image'),
-    body: jsonb('body').$type<RichTextDocument>().notNull().default({
-      type: 'doc',
-      content: [],
-    }),
-    layout: jsonb('layout').$type<Record<string, unknown>>(),
-    status: contentStatusEnum('status').notNull().default('draft'),
-    featured: boolean('featured').notNull().default(false),
-    editorsPick: boolean('editors_pick').notNull().default(false),
+    body: text('body', { mode: 'json' })
+      .$type<RichTextDocument>()
+      .notNull()
+      .default({ type: 'doc', content: [] }),
+    layout: text('layout', { mode: 'json' }).$type<Record<string, unknown>>(),
+    status: text('status', { enum: CONTENT_STATUSES })
+      .notNull()
+      .default('draft'),
+    featured: integer('featured', { mode: 'boolean' }).notNull().default(false),
+    editorsPick: integer('editors_pick', { mode: 'boolean' })
+      .notNull()
+      .default(false),
     displayOrder: integer('display_order').notNull().default(0),
     readingTime: integer('reading_time'),
     viewCount: integer('view_count').notNull().default(0),
     categoryId: text('category_id').references(() => category.id, {
       onDelete: 'set null',
     }),
-    publishedAt: timestamp('published_at', { withTimezone: true }),
-    scheduledAt: timestamp('scheduled_at', { withTimezone: true }),
+    publishedAt: optionalTs('published_at'),
+    scheduledAt: optionalTs('scheduled_at'),
     seoTitle: text('seo_title'),
     seoDescription: text('seo_description'),
     seoImage: text('seo_image'),
     canonicalUrl: text('canonical_url'),
-    noIndex: boolean('no_index').notNull().default(false),
-    noFollow: boolean('no_follow').notNull().default(false),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    noIndex: integer('no_index', { mode: 'boolean' }).notNull().default(false),
+    noFollow: integer('no_follow', { mode: 'boolean' }).notNull().default(false),
+    createdAt: ts('created_at'),
+    updatedAt: ts('updated_at'),
     createdBy: text('created_by').references(() => user.id, {
       onDelete: 'set null',
     }),
@@ -237,7 +209,7 @@ export const content = pgTable(
   ],
 );
 
-export const contentTag = pgTable(
+export const contentTag = sqliteTable(
   'content_tag',
   {
     contentId: text('content_id')
@@ -250,7 +222,7 @@ export const contentTag = pgTable(
   (table) => [primaryKey({ columns: [table.contentId, table.tagId] })],
 );
 
-export const contentCategory = pgTable(
+export const contentCategory = sqliteTable(
   'content_category',
   {
     contentId: text('content_id')
@@ -263,7 +235,7 @@ export const contentCategory = pgTable(
   (table) => [primaryKey({ columns: [table.contentId, table.categoryId] })],
 );
 
-export const contentRevision = pgTable(
+export const contentRevision = sqliteTable(
   'content_revision',
   {
     id: text('id').primaryKey(),
@@ -273,18 +245,16 @@ export const contentRevision = pgTable(
     version: integer('version').notNull(),
     title: text('title').notNull(),
     excerpt: text('excerpt'),
-    body: jsonb('body').$type<RichTextDocument>().notNull(),
+    body: text('body', { mode: 'json' }).$type<RichTextDocument>().notNull(),
     createdBy: text('created_by').references(() => user.id, {
       onDelete: 'set null',
     }),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: ts('created_at'),
   },
   (table) => [index('content_revision_content_id_idx').on(table.contentId)],
 );
 
-export const comment = pgTable('comment', {
+export const comment = sqliteTable('comment', {
   id: text('id').primaryKey(),
   contentId: text('content_id')
     .notNull()
@@ -293,16 +263,14 @@ export const comment = pgTable('comment', {
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
   body: text('body').notNull(),
-  status: commentStatusEnum('status').notNull().default('approved'),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
-    .defaultNow()
-    .notNull(),
+  status: text('status', { enum: COMMENT_STATUSES })
+    .notNull()
+    .default('approved'),
+  createdAt: ts('created_at'),
+  updatedAt: ts('updated_at'),
 });
 
-export const reaction = pgTable(
+export const reaction = sqliteTable(
   'reaction',
   {
     id: text('id').primaryKey(),
@@ -312,17 +280,15 @@ export const reaction = pgTable(
     userId: text('user_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
-    type: reactionTypeEnum('type').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    type: text('type', { enum: REACTION_TYPES }).notNull(),
+    createdAt: ts('created_at'),
   },
   (table) => [
     uniqueIndex('reaction_user_content_uidx').on(table.userId, table.contentId),
   ],
 );
 
-export const media = pgTable(
+export const media = sqliteTable(
   'media',
   {
     id: text('id').primaryKey(),
@@ -336,14 +302,12 @@ export const media = pgTable(
     uploadedBy: text('uploaded_by').references(() => user.id, {
       onDelete: 'set null',
     }),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: ts('created_at'),
   },
   (table) => [index('media_created_at_idx').on(table.createdAt)],
 );
 
-export const siteSettings = pgTable('site_settings', {
+export const siteSettings = sqliteTable('site_settings', {
   id: text('id').primaryKey(),
   siteName: text('site_name').notNull().default('AP Magazine'),
   logo: text('logo'),
@@ -358,9 +322,7 @@ export const siteSettings = pgTable('site_settings', {
   defaultSeoTitle: text('default_seo_title'),
   defaultSeoDescription: text('default_seo_description'),
   defaultSeoImage: text('default_seo_image'),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
-    .defaultNow()
-    .notNull(),
+  updatedAt: ts('updated_at'),
 });
 
 // ─── Relations ────────────────────────────────────────────────────────────────
@@ -466,15 +428,15 @@ export const contentRelations = relations(content, ({ one, many }) => ({
 
 export type Comment = typeof comment.$inferSelect;
 export type Reaction = typeof reaction.$inferSelect;
-export type ReactionType = (typeof reactionTypeEnum.enumValues)[number];
+export type ReactionType = (typeof REACTION_TYPES)[number];
 export type Content = typeof content.$inferSelect;
 export type NewContent = typeof content.$inferInsert;
 export type User = typeof user.$inferSelect;
-export type ContentStatus = (typeof contentStatusEnum.enumValues)[number];
-export type UserRole = (typeof userRoleEnum.enumValues)[number];
+export type ContentStatus = (typeof CONTENT_STATUSES)[number];
+export type UserRole = (typeof USER_ROLES)[number];
 export type Category = typeof category.$inferSelect;
 export type Tag = typeof tag.$inferSelect;
 export type Media = typeof media.$inferSelect;
 export type SiteSettings = typeof siteSettings.$inferSelect;
-export type CommentStatus = (typeof commentStatusEnum.enumValues)[number];
+export type CommentStatus = (typeof COMMENT_STATUSES)[number];
 export type ContentRevision = typeof contentRevision.$inferSelect;

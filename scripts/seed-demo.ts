@@ -126,7 +126,7 @@ async function seedDemo() {
   const force = process.argv.includes('--force');
 
   if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL is not set');
+    process.env.DATABASE_URL = './data/cms.db';
   }
 
   await ensureCmsDefaults();

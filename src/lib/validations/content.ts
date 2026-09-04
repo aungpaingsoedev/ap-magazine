@@ -56,7 +56,7 @@ function isAllowedImageUrl(value: string): boolean {
       const parsed = new URL(value);
       return (
         /\.(jpe?g|png|webp|gif)$/i.test(parsed.pathname) ||
-        parsed.pathname.includes('/storage/v1/object/public/')
+        parsed.hostname.endsWith('googleusercontent.com')
       );
     } catch {
       return false;
