@@ -23,10 +23,24 @@ Uploads are stored in `uploads/` and served through `/api/files`. The SQLite dat
 ### Docker (port 3031)
 
 ```bash
-docker compose up --build
+# Build & start (runs drizzle-kit push on every start)
+docker compose up -d --build
+
+# Schema only
+npm run docker:db:push
+# or: docker compose run --rm db-push
+
+# Demo seed (safe / skip existing)
+npm run docker:db:seed
+# or: docker compose run --rm db-seed
+
+# Wipe seed users and reseed
+npm run docker:db:seed:force
 ```
 
 App: http://localhost:3031
+
+Optional: set `SEED_ON_START=1` in `.env` to seed demo data automatically when the app container starts.
 
 SQLite and uploads persist in Docker volumes. For Google OAuth, add redirect URI:
 

@@ -6,6 +6,7 @@ services:
         NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3031}
         BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3031}
         BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-docker-build-only-change-me-in-runtime-env-32c}
+    image: ap-magazine-app
     container_name: ap-magazine
     ports:
       - "3031:3000"
@@ -17,10 +18,50 @@ services:
       DATABASE_URL: ./data/cms.db
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3031}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3031}
+      SEED_ON_START: ${SEED_ON_START:-0}
     volumes:
       - cms-data:/app/data
       - cms-uploads:/app/uploads
     restart: unless-stopped
+
+  # One-shot: docker compose run --rm db-push
+  db-push:
+    image: ap-magazine-app
+    profiles: ["tools"]
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ./data/cms.db
+    volumes:
+      - cms-data:/app/data
+      - cms-uploads:/app/uploads
+    entrypoint: ["/entrypoint.sh", "push"]
+
+  # One-shot: docker compose run --rm db-seed
+  db-seed:
+    image: ap-magazine-app
+    profiles: ["tools"]
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ./data/cms.db
+    volumes:
+      - cms-data:/app/data
+      - cms-uploads:/app/uploads
+    entrypoint: ["/entrypoint.sh", "seed"]
+
+  # One-shot: docker compose run --rm db-seed-force
+  db-seed-force:
+    image: ap-magazine-app
+    profiles: ["tools"]
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ./data/cms.db
+    volumes:
+      - cms-data:/app/data
+      - cms-uploads:/app/uploads
+    entrypoint: ["/entrypoint.sh", "seed:force"]
 
 volumes:
   cms-data:

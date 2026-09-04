@@ -12,8 +12,11 @@
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx scripts/seed-demo.ts",
     "db:seed:force": "tsx scripts/seed-demo.ts --force",
-    "docker:up": "docker compose up --build",
-    "docker:down": "docker compose down"
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down",
+    "docker:db:push": "docker compose run --rm db-push",
+    "docker:db:seed": "docker compose run --rm db-seed",
+    "docker:db:seed:force": "docker compose run --rm db-seed-force"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
