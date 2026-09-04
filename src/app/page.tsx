@@ -60,14 +60,14 @@ export default async function HomePage({
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
-        <div className="magazine-hero-enter border-b-2 border-dashed border-ink/30 py-10 sm:py-14 lg:py-16">
-          <p className="mb-4 text-xs font-semibold tracking-[0.22em] text-teal uppercase">
+        <div className="magazine-hero-enter border-b-2 border-dashed border-ink/30 py-5 sm:py-6 lg:py-8">
+          <p className="mb-2 text-xs font-semibold tracking-[0.22em] text-teal uppercase">
             Sketchbook issue
           </p>
-          <h1 className="font-display hero-sketch-title text-[clamp(3.5rem,14vw,9.5rem)] leading-[0.9] text-ink">
+          <h1 className="font-display hero-sketch-title text-[clamp(2.75rem,10vw,6.5rem)] leading-[0.92] text-ink">
             {settings?.homepageHeadline ?? 'Magazine'}
           </h1>
-          <p className="mt-5 max-w-xl text-base text-muted sm:text-lg">
+          <p className="mt-3 max-w-xl text-base text-muted sm:text-lg">
             Stories drawn in ink — essays, culture, and quiet observations from the studio.
           </p>
         </div>
