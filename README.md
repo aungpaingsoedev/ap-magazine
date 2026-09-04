@@ -23,7 +23,7 @@ Uploads are stored in `uploads/` and served through `/api/files`. The SQLite dat
 ### Docker (port 3031)
 
 ```bash
-# Build & start (runs drizzle-kit push on every start)
+# Build & start (runs drizzle-kit push + demo seed on every start)
 docker compose up -d --build
 
 # Schema only
@@ -40,7 +40,7 @@ npm run docker:db:seed:force
 
 App: http://localhost:3031
 
-Optional: set `SEED_ON_START=1` in `.env` to seed demo data automatically when the app container starts.
+Auto seed is **on** by default (`SEED_ON_START=1`). Set `SEED_ON_START=0` in `.env` to disable.
 
 SQLite and uploads persist in Docker volumes. For Google OAuth, add redirect URI:
 

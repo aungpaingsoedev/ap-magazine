@@ -18,7 +18,7 @@ services:
       DATABASE_URL: ./data/cms.db
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3031}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3031}
-      SEED_ON_START: ${SEED_ON_START:-0}
+      SEED_ON_START: ${SEED_ON_START:-1}
     volumes:
       - cms-data:/app/data
       - cms-uploads:/app/uploads

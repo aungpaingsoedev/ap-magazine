@@ -35,7 +35,10 @@ case "$cmd" in
     ;;
   app|"")
     run_push
-    if [ "${SEED_ON_START:-0}" = "1" ] || [ "${SEED_ON_START:-}" = "true" ]; then
+    # Default on: demo seed runs on every compose up (script skips existing rows)
+    if [ "${SEED_ON_START:-1}" = "0" ] || [ "${SEED_ON_START:-}" = "false" ]; then
+      echo "> Skipping demo seed (SEED_ON_START=${SEED_ON_START:-1})"
+    else
       run_seed
     fi
     echo "> Starting AP Magazine on 0.0.0.0:${PORT:-3000}"
