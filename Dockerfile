@@ -13,8 +13,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Public URLs baked into the client bundle
-ARG NEXT_PUBLIC_APP_URL=http://localhost:3031
-ARG BETTER_AUTH_URL=http://localhost:3031
+ARG NEXT_PUBLIC_APP_URL=http://localhost:3000
+ARG BETTER_AUTH_URL=http://localhost:3000
 # Required at build time (Better Auth rejects missing/default secret)
 ARG BETTER_AUTH_SECRET=docker-build-only-change-me-in-runtime-env-32c
 
