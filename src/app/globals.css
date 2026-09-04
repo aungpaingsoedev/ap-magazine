@@ -208,3 +208,28 @@ body {
 .hero-sketch-title {
   text-shadow: 2px 3px 0 color-mix(in srgb, var(--mustard) 28%, transparent);
 }
+
+.site-shell {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.site-pad {
+  width: 100%;
+  max-width: 90rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+@media (min-width: 640px) {
+  .site-pad {
+    padding-inline: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .site-pad {
+    padding-inline: 2.5rem;
+  }
+}

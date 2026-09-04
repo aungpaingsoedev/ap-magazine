@@ -18,7 +18,7 @@ export async function SiteHeader() {
           <WelcomeSignInDialog />
         </Suspense>
       )}
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-5 sm:px-6 lg:px-10">
+      <div className="site-pad flex items-center justify-between gap-4 py-5">
         <Link
           href="/"
           className="font-display text-2xl text-ink sm:text-3xl"
